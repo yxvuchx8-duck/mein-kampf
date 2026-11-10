@@ -42,6 +42,11 @@ User imported an existing React/Tailwind project from Bolt (ZIP). Reconstruct th
 - Public (/projects): 3-stage flow — project squares grid → per-project Table of Contents (page rows with block counts + dates) → reading view rendering markdown + inline photos.
 - Verified: clean slate after purge, photo upload compressed to ~66KB total storage and persisted across reload, all 3 stages + back navigation.
 
+## Implemented (2026-11-10, phase 5 — Blog + strict Minecraft theme)
+- Blog feature: `blogPosts` collection in localStorage state (id/title/datePublished/log blocks). Workspace middle column has Project Pages / Blog Space toggle; Blog Space lists posts chronologically with + Create New Post; canvas editor = Post Title input + log stream with photo inserts. Public `/blog` route = chronological timeline feed (glow-dot rail) rendering markdown + inline photos. Home hero grid now has 4 action cards (added "View Blog", action-blue accent).
+- Minecraft theme tightened to the user's strict spec: buttons #4a4a4a with 2px borders (#8b8b8b top/left, #212121 bottom/right), hover → white border + #FFFF55 golden text with dark drop-shadow, border-radius 0 everywhere; panels = #c6c6c6 inventory frames with raised light/dark inset borders; blog feed becomes "server chat log" boards with golden #b38900 titles on gray panels; pixel fonts Press Start 2P (headers) + VT323 (body) via Google Fonts; pixel assets generated with gpt-image-1.5 (deepslate tile, creeper, sword, pickaxe) in /public/assets/mc; creeper guards the password lock, pickaxes mark projects, swords mark pages; success messages = achievement toast. Third toggle state cycles dark → light → minecraft.
+- Verified: post create/publish/persist across reload, public feed renders text+photo, empty states, MC theme on blog + lock screen + toggle revert to dark, projects route unaffected.
+
 ## Backlog / next
 - P0: Homepage layout + project grid details — user will provide in next prompt.
 - P1: Block reordering (drag or up/down) in the workspace editor.

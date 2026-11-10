@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { motion } from 'framer-motion';
 import { ArrowLeft, ArrowUpRight, FileText } from 'lucide-react';
 import { LogBlockView } from '@/components/blocks';
-import { FloatingHeader } from '@/components/Header';
+import { FloatingHeader, McIcon } from '@/components/Header';
 import type { Page, Project } from '@/data/workspace';
 
 const accentClasses: Record<string, string> = {
@@ -66,6 +66,7 @@ function PageIndexView({ project, onBack, onOpenPage }: { project: Project; onBa
             ) : (
               project.pages.map((page, index) => (
                 <button key={page.id} data-testid={`index-page-${page.id}`} onClick={() => onOpenPage(page)} className="index-page-row group">
+                  <McIcon kind="sword" size={18} className="mc-only" />
                   <span className="index-page-number">{String(index + 1).padStart(2, '0')}</span>
                   <span className="index-page-body">
                     <span className="index-page-title">{page.title || 'Untitled page'}</span>

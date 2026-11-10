@@ -26,10 +26,19 @@ export type Project = {
   pages: Page[];
 };
 
+export type BlogPost = {
+  id: string;
+  title: string;
+  datePublished: string;
+  blocks: LogBlock[];
+};
+
 export type WorkspaceState = {
   projects: Project[];
+  blogPosts: BlogPost[];
   activeProjectId: string | null;
   activePageId: string | null;
+  activePostId: string | null;
 };
 
 const STORAGE_KEY = 'gemer.workspace.v2';
@@ -49,17 +58,21 @@ export function createProject(name: string): Project {
   return { id: uid(), name, category: 'Project', summary: '', accent: 'cyan', created_at: new Date().toISOString(), pages: [] };
 }
 
+export function createBlogPost(): BlogPost {
+  return { id: uid(), title: '', datePublished: new Date().toISOString(), blocks: [createLogBlock()] };
+}
+
 export function loadWorkspace(): WorkspaceState {
   try {
     const raw = window.localStorage.getItem(STORAGE_KEY);
     if (raw) {
       const parsed = JSON.parse(raw) as WorkspaceState;
-      if (Array.isArray(parsed.projects)) return parsed;
+      if (Array.isArray(parsed.projects)) return { ...parsed, blogPosts: parsed.blogPosts ?? [], activePostId: parsed.activePostId ?? null };
     }
   } catch {
     // corrupted storage falls through to a fresh state
   }
-  return { projects: [], activeProjectId: null, activePageId: null };
+  return { projects: [], blogPosts: [], activeProjectId: null, activePageId: null, activePostId: null };
 }
 
 export function saveWorkspace(state: WorkspaceState): boolean {

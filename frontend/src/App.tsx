@@ -1,20 +1,22 @@
 import { FormEvent, useEffect, useRef, useState } from 'react';
-import { ArrowDownRight, ArrowUpRight, ExternalLink, LockKeyhole, X } from 'lucide-react';
+import { ArrowDownRight, ArrowUpRight, ExternalLink, LockKeyhole, Newspaper, X } from 'lucide-react';
 import Lenis from 'lenis';
 import { AnimatePresence, motion, useScroll, useTransform } from 'framer-motion';
 import { loadWorkspace, saveWorkspace, type WorkspaceState } from '@/data/workspace';
-import { FloatingHeader } from '@/components/Header';
+import { FloatingHeader, McIcon } from '@/components/Header';
 import { WorkspacePage } from '@/components/WorkspacePage';
 import { ProjectsPage } from '@/components/ProjectsPage';
+import { BlogPage } from '@/components/BlogPage';
 
 const logo = '/assets/Screenshot_2026-11-10_133726.png';
 const ACCESS_CODE = '1769';
 
-type Route = '/' | '/projects' | '/workspace';
+type Route = '/' | '/projects' | '/workspace' | '/blog';
 
 function getRoute(): Route {
   if (window.location.pathname === '/projects') return '/projects';
   if (window.location.pathname === '/workspace') return '/workspace';
+  if (window.location.pathname === '/blog') return '/blog';
   return '/';
 }
 
@@ -103,7 +105,8 @@ function AccessModal({ onClose, onGranted }: { onClose: () => void; onGranted: (
           <X size={18} />
         </button>
         <div className="mb-8 flex h-12 w-12 items-center justify-center rounded-2xl border border-[#c7f36b]/30 bg-[#c7f36b]/10 text-[#c7f36b]">
-          <LockKeyhole size={21} />
+          <LockKeyhole size={21} className="mc-hide" />
+          <McIcon kind="creeper" size={34} className="mc-only" testId="access-creeper" />
         </div>
         <p className="mb-3 text-[10px] font-bold uppercase tracking-[0.25em] text-[#c7f36b]">Restricted area</p>
         <h2 id="access-title" className="text-3xl tracking-[-0.05em] text-white">Workspace access</h2>
@@ -212,7 +215,7 @@ function HomePage({ onNavigate }: { onNavigate: (route: Route) => void }) {
       <EditorialMarquee />
 
       <section className="action-section border-y border-white/10">
-        <div className="mx-auto grid max-w-7xl gap-4 px-6 py-10 sm:px-10 sm:py-14 lg:grid-cols-3 lg:px-16">
+        <div className="mx-auto grid max-w-7xl gap-4 px-6 py-10 sm:px-10 sm:py-14 lg:grid-cols-4 lg:px-16">
           <motion.a
             data-testid="action-about"
             href="https://amarpreetsahoo.framer.website/"
@@ -262,6 +265,22 @@ function HomePage({ onNavigate }: { onNavigate: (route: Route) => void }) {
               <ArrowDownRight size={20} />
             </span>
             <span className="action-caption">Browse the public gallery</span>
+          </motion.button>
+          <motion.button
+            data-testid="action-blog"
+            onClick={() => onNavigate('/blog')}
+            className="action-card action-blue text-left"
+            initial={{ opacity: 0, y: 34 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true, margin: '-60px' }}
+            transition={{ delay: 0.3, duration: 0.7, ease: [0.16, 1, 0.3, 1] }}
+          >
+            <span className="action-index">04</span>
+            <span className="action-title">View Blog</span>
+            <span className="action-arrow">
+              <Newspaper size={18} />
+            </span>
+            <span className="action-caption">Read the latest posts</span>
           </motion.button>
         </div>
       </section>
@@ -338,6 +357,7 @@ function App() {
 
   if (showSplash) return <SplashScreen leaving={leaving} />;
   if (route === '/projects') return <ProjectsPage projects={workspace.projects} onNavigate={navigate} />;
+  if (route === '/blog') return <BlogPage posts={workspace.blogPosts} onNavigate={navigate} />;
   if (route === '/workspace') return <WorkspacePage state={workspace} setState={setWorkspace} storageError={storageError} clearStorageError={() => setStorageError('')} onNavigate={navigate} />;
   return <HomePage onNavigate={navigate} />;
 }

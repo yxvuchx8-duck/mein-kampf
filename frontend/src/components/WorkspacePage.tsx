@@ -1,15 +1,26 @@
 import { useState } from 'react';
-import { ArrowLeft, FolderKanban, FileText, Plus, Save, Trash2, X } from 'lucide-react';
+import { ArrowLeft, FolderKanban, FileText, Newspaper, Plus, Save, Trash2, X } from 'lucide-react';
 import { LogBlockEditor } from '@/components/blocks';
-import { FloatingHeader } from '@/components/Header';
-import { createLogBlock, createPage, createProject, findPage, type Page, type Project, type WorkspaceState } from '@/data/workspace';
+import { FloatingHeader, McIcon } from '@/components/Header';
+import { createBlogPost, createLogBlock, createPage, createProject, findPage, type BlogPost, type Page, type Project, type WorkspaceState } from '@/data/workspace';
 
 const accentKeys = ['cyan', 'lime', 'amber', 'blue'];
+type Space = 'projects' | 'blog';
 
-export function WorkspacePage({ state, setState, storageError, clearStorageError, onNavigate }: { state: WorkspaceState; setState: (next: WorkspaceState) => void; storageError: string; clearStorageError: () => void; onNavigate: (route: '/' | '/projects' | '/workspace') => void }) {
+type Props = {
+  state: WorkspaceState;
+  setState: (next: WorkspaceState) => void;
+  storageError: string;
+  clearStorageError: () => void;
+  onNavigate: (route: '/' | '/projects' | '/workspace' | '/blog') => void;
+};
+
+export function WorkspacePage({ state, setState, storageError, clearStorageError, onNavigate }: Props) {
+  const [space, setSpace] = useState<Space>('projects');
   const [message, setMessage] = useState('');
   const project = state.projects.find((p) => p.id === state.activeProjectId);
   const page = findPage(state);
+  const post = state.blogPosts.find((p) => p.id === state.activePostId);
 
   function flash(text: string) {
     setMessage(text);
@@ -22,6 +33,9 @@ export function WorkspacePage({ state, setState, storageError, clearStorageError
   function updatePage(id: string, fn: (pg: Page) => Page) {
     if (!project) return;
     updateProject(project.id, (p) => ({ ...p, pages: p.pages.map((pg) => (pg.id === id ? fn(pg) : pg)) }));
+  }
+  function updatePost(id: string, fn: (post: BlogPost) => BlogPost) {
+    setState({ ...state, blogPosts: state.blogPosts.map((p) => (p.id === id ? fn(p) : p)) });
   }
 
   function addProject() {
@@ -61,6 +75,25 @@ export function WorkspacePage({ state, setState, storageError, clearStorageError
     updatePage(page.id, (pg) => ({ ...pg, updated_at: new Date().toISOString(), blocks: [...pg.blocks, createLogBlock()] }));
   }
 
+  function addPost() {
+    const p = createBlogPost();
+    setState({ ...state, blogPosts: [p, ...state.blogPosts], activePostId: p.id });
+  }
+  function removePost(id: string) {
+    setState({
+      ...state,
+      blogPosts: state.blogPosts.filter((p) => p.id !== id),
+      activePostId: state.activePostId === id ? null : state.activePostId,
+    });
+    flash('Post removed.');
+  }
+  function addPostBlock() {
+    if (!post) return;
+    updatePost(post.id, (p) => ({ ...p, blocks: [...p.blocks, createLogBlock()] }));
+  }
+
+  const editingBlog = space === 'blog';
+
   return (
     <main className="min-h-screen bg-[#0d1313] text-[#eef2eb]" data-testid="workspace-page">
       <FloatingHeader
@@ -77,51 +110,152 @@ export function WorkspacePage({ state, setState, storageError, clearStorageError
       <div className="workspace-layout mx-auto max-w-[1400px] px-4 pb-16 pt-28 sm:px-8">
         <aside className="workspace-col" data-testid="project-rail">
           <div className="workspace-col-head">
-            <span>Projects</span>
-            <button data-testid="add-project-button" onClick={addProject} aria-label="Add project">
-              <Plus size={14} />
-            </button>
-          </div>
-          {state.projects.length === 0 && <p className="workspace-empty-hint">No projects yet. Create one to start documenting.</p>}
-          {state.projects.map((p) => (
-            <div key={p.id} className={`notebook-item ${p.id === state.activeProjectId ? 'notebook-item-active' : ''}`} data-testid={`project-item-${p.id}`}>
-              <button className="notebook-item-main" onClick={() => setState({ ...state, activeProjectId: p.id, activePageId: null })}>
-                <FolderKanban size={14} />
-                <span className="truncate">{p.name}</span>
-              </button>
-              <button className="notebook-item-remove" onClick={() => removeProject(p.id)} aria-label={`Remove ${p.name}`} data-testid={`project-remove-${p.id}`}>
-                <Trash2 size={13} />
-              </button>
-            </div>
-          ))}
-        </aside>
-
-        <aside className="workspace-col" data-testid="page-list">
-          <div className="workspace-col-head">
-            <span>Pages</span>
-            {project && (
-              <button data-testid="add-page-button" onClick={addPage} aria-label="Add page">
+            <span className="mc-heading">{editingBlog ? 'Blog Space' : 'Projects'}</span>
+            {!editingBlog && (
+              <button data-testid="add-project-button" onClick={addProject} aria-label="Add project">
                 <Plus size={14} />
               </button>
             )}
           </div>
-          {!project && <p className="workspace-empty-hint">Select a project to see its pages.</p>}
-          {project && project.pages.length === 0 && <p className="workspace-empty-hint">No pages yet. Add the first one.</p>}
-          {project?.pages.map((pg) => (
-            <div key={pg.id} className={`notebook-item ${pg.id === page?.id ? 'notebook-item-active' : ''}`} data-testid={`page-item-${pg.id}`}>
-              <button className="notebook-item-main" onClick={() => setState({ ...state, activePageId: pg.id })}>
-                <FileText size={13} />
-                <span className="truncate">{pg.title || 'Untitled page'}</span>
-              </button>
-              <button className="notebook-item-remove" onClick={() => removePage(pg.id)} aria-label={`Remove ${pg.title}`} data-testid={`page-remove-${pg.id}`}>
-                <Trash2 size={13} />
-              </button>
-            </div>
-          ))}
+          {editingBlog ? (
+            <p className="workspace-empty-hint">
+              Blog posts are a flat stream — no project needed. Create and manage them in the middle column, and they publish straight to <span className="text-[#c7f36b]">/blog</span>.
+            </p>
+          ) : (
+            <>
+              {state.projects.length === 0 && <p className="workspace-empty-hint">No projects yet. Create one to start documenting.</p>}
+              {state.projects.map((p) => (
+                <div key={p.id} className={`notebook-item ${p.id === state.activeProjectId ? 'notebook-item-active' : ''}`} data-testid={`project-item-${p.id}`}>
+                  <button className="notebook-item-main" onClick={() => setState({ ...state, activeProjectId: p.id, activePageId: null })}>
+                    <FolderKanban size={14} className="mc-hide" />
+                    <McIcon kind="pickaxe" size={16} className="mc-only" />
+                    <span className="truncate">{p.name}</span>
+                  </button>
+                  <button className="notebook-item-remove" onClick={() => removeProject(p.id)} aria-label={`Remove ${p.name}`} data-testid={`project-remove-${p.id}`}>
+                    <Trash2 size={13} />
+                  </button>
+                </div>
+              ))}
+            </>
+          )}
+        </aside>
+
+        <aside className="workspace-col" data-testid="page-list">
+          <div className="workspace-space-toggle" data-testid="space-toggle">
+            <button data-testid="space-projects-tab" onClick={() => setSpace('projects')} className={space === 'projects' ? 'space-tab-active' : ''}>
+              <FileText size={13} /> Project Pages
+            </button>
+            <button data-testid="space-blog-tab" onClick={() => setSpace('blog')} className={space === 'blog' ? 'space-tab-active' : ''}>
+              <Newspaper size={13} /> Blog Space
+            </button>
+          </div>
+          {editingBlog ? (
+            <>
+              <div className="workspace-col-head">
+                <span className="mc-heading">Posts</span>
+                <button data-testid="add-post-button" onClick={addPost} aria-label="Create new post">
+                  <Plus size={14} />
+                </button>
+              </div>
+              {state.blogPosts.length === 0 && <p className="workspace-empty-hint">No posts yet. Create the first one.</p>}
+              {state.blogPosts.map((p) => (
+                <div key={p.id} className={`notebook-item ${p.id === state.activePostId ? 'notebook-item-active' : ''}`} data-testid={`post-item-${p.id}`}>
+                  <button className="notebook-item-main" onClick={() => setState({ ...state, activePostId: p.id })}>
+                    <Newspaper size={13} className="mc-hide" />
+                    <McIcon kind="sword" size={15} className="mc-only" />
+                    <span className="flex min-w-0 flex-1 flex-col">
+                      <span className="truncate">{p.title || 'Untitled post'}</span>
+                      <span className="text-[10px] text-[#718080]">{new Date(p.datePublished).toLocaleDateString()}</span>
+                    </span>
+                  </button>
+                  <button className="notebook-item-remove" onClick={() => removePost(p.id)} aria-label={`Remove ${p.title}`} data-testid={`post-remove-${p.id}`}>
+                    <Trash2 size={13} />
+                  </button>
+                </div>
+              ))}
+            </>
+          ) : (
+            <>
+              <div className="workspace-col-head">
+                <span className="mc-heading">Pages</span>
+                {project && (
+                  <button data-testid="add-page-button" onClick={addPage} aria-label="Add page">
+                    <Plus size={14} />
+                  </button>
+                )}
+              </div>
+              {!project && <p className="workspace-empty-hint">Select a project to see its pages.</p>}
+              {project && project.pages.length === 0 && <p className="workspace-empty-hint">No pages yet. Add the first one.</p>}
+              {project?.pages.map((pg) => (
+                <div key={pg.id} className={`notebook-item ${pg.id === page?.id ? 'notebook-item-active' : ''}`} data-testid={`page-item-${pg.id}`}>
+                  <button className="notebook-item-main" onClick={() => setState({ ...state, activePageId: pg.id })}>
+                    <FileText size={13} className="mc-hide" />
+                    <McIcon kind="sword" size={15} className="mc-only" />
+                    <span className="truncate">{pg.title || 'Untitled page'}</span>
+                  </button>
+                  <button className="notebook-item-remove" onClick={() => removePage(pg.id)} aria-label={`Remove ${pg.title}`} data-testid={`page-remove-${pg.id}`}>
+                    <Trash2 size={13} />
+                  </button>
+                </div>
+              ))}
+            </>
+          )}
         </aside>
 
         <section className="workspace-editor" data-testid="workspace-editor">
-          {!page || !project ? (
+          {editingBlog ? (
+            !post ? (
+              <div className="workspace-placeholder" data-testid="editor-empty">
+                <p className="mb-2 text-[10px] font-bold uppercase tracking-[0.25em] text-[#c7f36b]">Blog space</p>
+                <h1 className="text-4xl tracking-[-0.05em] sm:text-5xl">
+                  Pick a post<span className="text-[#c7f36b]">.</span>
+                </h1>
+                <p className="mt-4 max-w-sm text-sm leading-6 text-[#879797]">Open or create a post in the middle column. Posts publish straight to the public /blog feed.</p>
+              </div>
+            ) : (
+              <div className="editor-form" data-testid="post-editor-form">
+                <input data-testid="post-title-input" className="editor-page-title" value={post.title} onChange={(e) => updatePost(post.id, (p) => ({ ...p, title: e.target.value }))} placeholder="Post title" />
+                <p className="mt-3 text-xs text-[#718080]" data-testid="post-date">
+                  Published {new Date(post.datePublished).toLocaleDateString(undefined, { year: 'numeric', month: 'long', day: 'numeric' })}
+                </p>
+                <div className="editor-blocks">
+                  <div className="editor-blocks-head">
+                    <span className="text-[10px] font-bold uppercase tracking-[0.18em] text-[#718080]">Post stream</span>
+                    <button type="button" data-testid="add-post-block" onClick={addPostBlock} className="editor-block-add-btn">
+                      <Plus size={13} /> Add log block
+                    </button>
+                  </div>
+                  {post.blocks.length === 0 && <p className="workspace-empty-hint">No blocks yet — add one and start writing.</p>}
+                  {post.blocks.map((block) => (
+                    <LogBlockEditor
+                      key={block.id}
+                      block={block}
+                      onChange={(patch) => updatePost(post.id, (p) => ({ ...p, blocks: p.blocks.map((b) => (b.id === block.id ? { ...b, ...patch } : b)) }))}
+                      onRemove={() => updatePost(post.id, (p) => ({ ...p, blocks: p.blocks.filter((b) => b.id !== block.id) }))}
+                      onStorageError={flash}
+                    />
+                  ))}
+                </div>
+                <div className="flex flex-wrap items-center gap-3 pt-2">
+                  <button data-testid="post-save-button" type="button" onClick={() => flash('Post published locally.')} className="flex items-center gap-2 rounded-full bg-[#c7f36b] px-5 py-3 text-xs font-bold uppercase tracking-wider text-[#162016] transition hover:bg-white">
+                    Publish post <Save size={14} />
+                  </button>
+                  <button data-testid="post-close-button" type="button" onClick={() => setState({ ...state, activePostId: null })} className="rounded-full border border-white/10 px-5 py-3 text-xs font-bold uppercase tracking-wider text-[#a8b7b7] transition hover:border-white/30 hover:text-white">
+                    <span className="flex items-center gap-2">
+                      Close <X size={13} />
+                    </span>
+                  </button>
+                  {message && (
+                    <span data-testid="workspace-message" className="mc-toast text-xs text-[#c7f36b]">
+                      <McIcon kind="creeper" size={18} className="mc-only" />
+                      <span className="mc-toast-title mc-only">Challenge Complete!</span>
+                      {message}
+                    </span>
+                  )}
+                </div>
+              </div>
+            )
+          ) : !page || !project ? (
             <div className="workspace-placeholder" data-testid="editor-empty">
               <p className="mb-2 text-[10px] font-bold uppercase tracking-[0.25em] text-[#c7f36b]">Secure editing suite</p>
               <h1 className="text-4xl tracking-[-0.05em] sm:text-5xl">
@@ -148,7 +282,7 @@ export function WorkspacePage({ state, setState, storageError, clearStorageError
                   <select data-testid="editor-accent-select" value={project.accent} onChange={(e) => updateProject(project.id, (p) => ({ ...p, accent: e.target.value }))}>
                     {accentKeys.map((key) => (
                       <option key={key} value={key}>
-                        {key}
+                        {!editingBlog && key}
                       </option>
                     ))}
                   </select>
@@ -188,7 +322,9 @@ export function WorkspacePage({ state, setState, storageError, clearStorageError
                   </span>
                 </button>
                 {message && (
-                  <span data-testid="workspace-message" className="text-xs text-[#c7f36b]">
+                  <span data-testid="workspace-message" className="mc-toast text-xs text-[#c7f36b]">
+                    <McIcon kind="creeper" size={18} className="mc-only" />
+                    <span className="mc-toast-title mc-only">Challenge Complete!</span>
                     {message}
                   </span>
                 )}
