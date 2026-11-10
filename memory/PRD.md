@@ -30,6 +30,11 @@ User imported an existing React/Tailwind project from Bolt (ZIP). Reconstruct th
 - Home page: unchanged (splash animation, masked hero reveal, marquee, three action cards) — placeholder intact for the user's upcoming layout/grid details.
 - Verified in preview: clean-slate empty gallery, notebook+page creation, block editing, localStorage persistence across reload, public reading view rendering all block types.
 
+## Implemented (2026-11-10, phase 3 — header + security)
+- Header refactored: pill/capsule bar removed on all routes. New `src/components/Header.tsx` `FloatingHeader` — borderless full-width flex row, logo avatar far left, sun/moon Light/Dark toggle far right (persists via localStorage key `gemer.theme`). Full light-mode CSS layer added to `src/index.css`.
+- Security: workspace access-code input is now `type="password"` (native masking dots).
+- Verified: no pill classes in header, toggle flips light/dark on all routes, theme survives reload, password input masked, 1769 still unlocks workspace.
+
 ## Backlog / next
 - P0: Homepage layout + project grid details — user will provide in next prompt.
 - P1: Block reordering (drag or up/down) in the workspace editor.

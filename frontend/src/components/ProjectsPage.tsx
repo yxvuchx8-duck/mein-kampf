@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { motion } from 'framer-motion';
 import { ArrowLeft, ArrowUpRight, ExternalLink, FileText } from 'lucide-react';
 import { BlockView } from '@/components/blocks';
+import { FloatingHeader } from '@/components/Header';
 import { accentClasses } from '@/components/WorkspacePage';
 import type { Notebook, SubPage } from '@/data/workspace';
 
@@ -54,14 +55,14 @@ export function ProjectsPage({ notebooks, onNavigate }: { notebooks: Notebook[];
     const { notebook, page } = open;
     return (
       <main className="min-h-screen bg-[#111818] text-[#eef2eb]" data-testid="project-detail-page">
-        <header className="fixed left-0 right-0 top-0 z-40 px-4 pt-4 sm:px-8 sm:pt-6" data-testid="site-header">
-          <nav className="mx-auto flex max-w-5xl items-center justify-between rounded-full border border-white/10 bg-[#111818]/75 px-4 py-3 backdrop-blur-xl sm:px-5">
+        <FloatingHeader
+          left={
             <button data-testid="detail-back-button" onClick={() => setOpen(null)} className="flex items-center gap-2 text-xs font-bold uppercase tracking-[0.16em] text-[#a8b7b7] transition hover:text-white">
               <ArrowLeft size={15} /> All projects
             </button>
-            <span className="text-[10px] font-bold uppercase tracking-[0.25em] text-[#c7f36b]">{notebook.name}</span>
-          </nav>
-        </header>
+          }
+          right={<span className="text-[10px] font-bold uppercase tracking-[0.25em] text-[#c7f36b]">{notebook.name}</span>}
+        />
         <article className="mx-auto max-w-3xl px-6 pb-24 pt-36 sm:px-10">
           <motion.div initial={{ opacity: 0, y: 24 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.7, ease: [0.16, 1, 0.3, 1] }}>
             <p className="mb-3 text-[10px] font-bold uppercase tracking-[0.25em] text-[#c7f36b]">{page.category || 'Project'}</p>
@@ -92,14 +93,16 @@ export function ProjectsPage({ notebooks, onNavigate }: { notebooks: Notebook[];
 
   return (
     <main className="min-h-screen bg-[#111818] text-[#eef2eb]" data-testid="projects-page">
-      <header className="fixed left-0 right-0 top-0 z-40 px-4 pt-4 sm:px-8 sm:pt-6" data-testid="site-header">
-        <nav className="mx-auto flex max-w-7xl items-center justify-between rounded-full border border-white/10 bg-[#111818]/75 px-4 py-3 backdrop-blur-xl sm:px-5">
-          <button data-testid="header-back-button" onClick={() => onNavigate('/')} className="flex items-center gap-2 text-xs font-bold uppercase tracking-[0.16em] text-[#a8b7b7] transition hover:text-white">
-            <ArrowLeft size={15} /> Back to home
-          </button>
-          <span className="text-[10px] font-bold uppercase tracking-[0.25em] text-[#c7f36b]">Public gallery</span>
-        </nav>
-      </header>
+      <FloatingHeader
+        left={
+          <>
+            <button data-testid="header-back-button" onClick={() => onNavigate('/')} className="flex items-center gap-2 text-xs font-bold uppercase tracking-[0.16em] text-[#a8b7b7] transition hover:text-white">
+              <ArrowLeft size={15} /> Back to home
+            </button>
+            <span className="text-[10px] font-bold uppercase tracking-[0.25em] text-[#c7f36b]">Public gallery</span>
+          </>
+        }
+      />
       <section className="mx-auto min-h-screen max-w-7xl px-6 pb-20 pt-36 sm:px-10 lg:px-16">
         <div className="mb-12 flex items-end justify-between border-b border-white/10 pb-6">
           <div>

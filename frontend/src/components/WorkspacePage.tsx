@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { ArrowLeft, Code2, FileText, Image, NotebookPen, Plus, Save, Trash2, Video, X } from 'lucide-react';
 import { BlockEditor } from '@/components/blocks';
+import { FloatingHeader } from '@/components/Header';
 import { createBlock, createNotebook, createPage, findPage, uid, type Block, type SubPage, type WorkspaceState } from '@/data/workspace';
 
 const accentClasses: Record<string, string> = {
@@ -69,14 +70,16 @@ export function WorkspacePage({ state, setState, onNavigate }: { state: Workspac
 
   return (
     <main className="min-h-screen bg-[#0d1313] text-[#eef2eb]" data-testid="workspace-page">
-      <header className="fixed left-0 right-0 top-0 z-40 px-4 pt-4 sm:px-8 sm:pt-6" data-testid="site-header">
-        <nav className="mx-auto flex max-w-[1400px] items-center justify-between rounded-full border border-white/10 bg-[#111818]/75 px-4 py-3 backdrop-blur-xl sm:px-5">
-          <button data-testid="header-logo-button" onClick={() => onNavigate('/')} className="flex items-center gap-2 rounded-full text-xs font-bold uppercase tracking-[0.16em] text-[#a8b7b7] transition hover:text-white">
-            <ArrowLeft size={15} /> Home
-          </button>
-          <span className="text-[10px] font-bold uppercase tracking-[0.25em] text-[#c7f36b]">Editing suite</span>
-        </nav>
-      </header>
+      <FloatingHeader
+        left={
+          <>
+            <button data-testid="header-logo-button" onClick={() => onNavigate('/')} className="flex items-center gap-2 text-xs font-bold uppercase tracking-[0.16em] text-[#a8b7b7] transition hover:text-white">
+              <ArrowLeft size={15} /> Home
+            </button>
+            <span className="text-[10px] font-bold uppercase tracking-[0.25em] text-[#c7f36b]">Editing suite</span>
+          </>
+        }
+      />
 
       <div className="workspace-layout mx-auto max-w-[1400px] px-4 pb-16 pt-28 sm:px-8">
         <aside className="workspace-col" data-testid="notebook-rail">

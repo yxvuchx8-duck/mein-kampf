@@ -1,8 +1,9 @@
 import { FormEvent, useEffect, useRef, useState } from 'react';
-import { ArrowDownRight, ArrowLeft, ArrowUpRight, ExternalLink, LockKeyhole, X } from 'lucide-react';
+import { ArrowDownRight, ArrowUpRight, ExternalLink, LockKeyhole, X } from 'lucide-react';
 import Lenis from 'lenis';
 import { AnimatePresence, motion, useScroll, useTransform } from 'framer-motion';
 import { loadWorkspace, saveWorkspace, type WorkspaceState } from '@/data/workspace';
+import { FloatingHeader } from '@/components/Header';
 import { WorkspacePage } from '@/components/WorkspacePage';
 import { ProjectsPage } from '@/components/ProjectsPage';
 
@@ -43,21 +44,15 @@ function LogoMark({ size = 'h-12 w-12' }: { size?: string }) {
   );
 }
 
-function SiteHeader({ onNavigate, backLabel }: { onNavigate: (route: Route) => void; backLabel?: string }) {
+function HomeHeader({ onNavigate }: { onNavigate: (route: Route) => void }) {
   return (
-    <header className="fixed left-0 right-0 top-0 z-40 px-4 pt-4 sm:px-8 sm:pt-6" data-testid="site-header">
-      <nav className="mx-auto flex max-w-7xl items-center justify-between rounded-full border border-white/10 bg-[#111818]/75 px-4 py-3 backdrop-blur-xl sm:px-5">
+    <FloatingHeader
+      left={
         <button data-testid="header-logo-button" onClick={() => onNavigate('/')} className="rounded-full transition hover:opacity-75" aria-label="Return to Gemer home">
-          <LogoMark size="h-9 w-9" />
+          <LogoMark size="h-10 w-10" />
         </button>
-        {backLabel && (
-          <button data-testid="header-back-button" onClick={() => onNavigate('/')} className="flex items-center gap-2 text-xs font-bold uppercase tracking-[0.16em] text-[#a8b7b7] transition hover:text-white">
-            <ArrowLeft size={15} />
-            {backLabel}
-          </button>
-        )}
-      </nav>
-    </header>
+      }
+    />
   );
 }
 
@@ -119,6 +114,7 @@ function AccessModal({ onClose, onGranted }: { onClose: () => void; onGranted: (
           </label>
           <input
             data-testid="access-code-input"
+            type="password"
             autoFocus
             id="access-code"
             inputMode="numeric"
@@ -177,7 +173,7 @@ function HomePage({ onNavigate }: { onNavigate: (route: Route) => void }) {
 
   return (
     <main className="min-h-screen overflow-hidden bg-[#111818] text-[#eef2eb]" data-testid="home-page">
-      <SiteHeader onNavigate={onNavigate} />
+      <HomeHeader onNavigate={onNavigate} />
       <section ref={heroRef} className="relative mx-auto flex min-h-[760px] max-w-7xl items-end px-6 pb-20 pt-40 sm:px-10 lg:min-h-screen lg:px-16 lg:pb-28">
         <motion.div className="hero-glow" style={{ y: glowY }} />
         <motion.div className="relative z-10 max-w-6xl" style={{ y: headlineY }}>
