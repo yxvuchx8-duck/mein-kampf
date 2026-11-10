@@ -16,7 +16,7 @@ body { margin: 0; min-width: 320px; }
 .loading-line { animation: loading 2.2s cubic-bezier(.2,.8,.2,1) both; transform-origin: left; }
 .hero-glow { position: absolute; right: -20%; top: 18%; width: 50vw; height: 50vw; border-radius: 9999px; background: radial-gradient(circle, rgba(65,142,143,.18), transparent 67%); filter: blur(10px); }
 
-.footer-ambient { border-top: 1px solid rgba(255,255,255,.08); }
+.footer-ambient { border-top: 1px solid rgba(255,255,255,.08); padding-bottom: env(safe-area-inset-bottom); }
 .footer-canvas { position: relative; height: 150px; width: 100%; overflow: hidden; cursor: crosshair; }
 .footer-canvas-el { position: absolute; inset: 0; height: 100%; width: 100%; display: block; }
 html.minecraft .footer-ambient { border-top-color: #000; }
@@ -152,6 +152,7 @@ html.minecraft .cover-edit-preview { border-radius: 0; border: 2px solid; border
 @keyframes pulse { 50% { opacity: .35; transform: scale(.75); } }
 @keyframes marquee-scroll { from { transform: translateX(0); } to { transform: translateX(-50%); } }
 @media (max-width: 640px) { .project-art { min-height: 280px; } .access-modal { padding: 28px 22px; } }
+@media (max-width: 1023px) { .workspace-col { max-height: 300px; overflow-y: auto; overscroll-behavior: contain; } .workspace-editor { min-height: 60vh; } }
 @media (prefers-reduced-motion: reduce) { *, *::before, *::after { animation-duration: .01ms !important; animation-iteration-count: 1 !important; scroll-behavior: auto !important; transition-duration: .01ms !important; } }
 
 .theme-toggle { display: flex; align-items: center; justify-content: center; height: 40px; width: 40px; border-radius: 9999px; color: #a8b7b7; transition: color 200ms ease, transform 250ms cubic-bezier(.2,.8,.2,1); }
@@ -261,6 +262,7 @@ html.minecraft .bg-\[\#111818\], html.minecraft .bg-\[\#0d1313\], html.minecraft
 
 html.minecraft body, html.minecraft input, html.minecraft textarea, html.minecraft select, html.minecraft button { font-family: 'VT323', 'Courier New', monospace; font-size: 19px; letter-spacing: 0; }
 html.minecraft h1, html.minecraft h2, html.minecraft h3, html.minecraft .mc-heading, html.minecraft .action-title, html.minecraft .editor-page-title { font-family: 'Press Start 2P', 'VT323', monospace; letter-spacing: .02em; color: #ffff55; text-shadow: 3px 3px 0 #3f3f00; }
+html.minecraft h1, html.minecraft h2, html.minecraft .blog-post-title { font-size: clamp(1.4rem, 6vw, 3rem); line-height: 1.4; word-break: break-word; }
 html.minecraft .text-\[\#eef2eb\], html.minecraft .text-\[\#eff3eb\], html.minecraft .text-white { color: #ffff55; }
 html.minecraft .text-\[\#a8b7b7\], html.minecraft .text-\[\#879797\], html.minecraft .text-\[\#718080\] { color: #55ff55; }
 html.minecraft .text-\[\#c7f36b\] { color: #55ff55; text-shadow: 2px 2px 0 #1a3a00; }
