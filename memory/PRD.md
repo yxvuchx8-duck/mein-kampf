@@ -79,6 +79,9 @@ User imported an existing React/Tailwind project from Bolt (ZIP). Reconstruct th
 ## Implemented (2026-11-10, phase 12 — GitHub push)
 - Repo created + pushed: github.com/yxvuchx8-duck/mein-kampf (public, main branch, 105 files). Secrets excluded via .gitignore (.env files not committed; only frontend/.env.example with placeholder). GITHUB_TOKEN stored in secrets store; git remote scrubbed of token.
 
+## Implemented (2026-11-10, phase 14 — Netlify SPA redirects)
+- `frontend/public/_redirects` with `/*    /index.html   200` created, committed (d623c1c) and pushed to mein-kampf/main. Verified by testing agent: file bytes exact, served by Vite, on GitHub, and copied to dist root by vite build. Netlify must have Base directory `frontend`, build `yarn build`, publish `frontend/dist`, then trigger a new deploy.
+
 ## Backlog / next
 - P0: Homepage layout + project grid details — user will provide in next prompt.
 - P1: Block reordering (drag or up/down) in the workspace editor.
