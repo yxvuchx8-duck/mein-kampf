@@ -53,6 +53,12 @@ User imported an existing React/Tailwind project from Bolt (ZIP). Reconstruct th
 - Blog copy: heading "Things I Think", subtitle "don't know why".
 - Verified by testing agent (2 passes): ticker wordless + animating, all 4 cards solid rgb(49,49,49) with full titles visible at 1920px and 1024px, blog copy exact in both themes. Live site not checked; mobile <1024px not checked.
 
+## Implemented (2026-11-10, phase 7 — Supabase cloud migration)
+- Supabase connected: direct browser client via @supabase/supabase-js (`src/data/supabase.ts`), VITE_SUPABASE_URL + VITE_SUPABASE_ANON_KEY in frontend/.env (secrets store). Tables provisioned via Management API with a Personal Access Token (in secrets as SUPABASE_ACCESS_TOKEN): projects(id,name,category,summary,accent,created_at), pages(id,project_id→projects CASCADE,title,updated_at), log_blocks(id,page_id→pages CASCADE,type,value jsonb,position_order), blog_posts(id,title,date_published,content_blocks jsonb). RLS enabled with open public_access policies (anon key = write access; access code 1769 is the only gate — acceptable for personal site).
+- localStorage persistence fully detached: App loads from cloud on mount; public /projects + /blog read live from Supabase; workspace "Save & Sync" upserts project+page+blocks or post to cloud, deletes sync immediately. App ids are now real UUIDs (crypto.randomUUID()) to match uuid PK columns.
+- Verified end-to-end in preview: page + compressed photo saved to cloud, localStorage wiped + reload → data restored from Supabase, public 3-stage reading view renders cloud content (text + base64 photo), blog post appears in /blog. Cloud sync errors surface as a banner instead of failing silently.
+- Test data in the cloud db: project "Nebula Atlas" (page "Cloud Sync Test") and blog post "Cloud post test" — user can delete from workspace.
+
 ## Backlog / next
 - P0: Homepage layout + project grid details — user will provide in next prompt.
 - P1: Block reordering (drag or up/down) in the workspace editor.

@@ -2,7 +2,7 @@ import { FormEvent, useEffect, useRef, useState } from 'react';
 import { ArrowDownRight, ArrowUpRight, ExternalLink, LockKeyhole, Newspaper, X } from 'lucide-react';
 import Lenis from 'lenis';
 import { AnimatePresence, motion, useScroll, useTransform } from 'framer-motion';
-import { loadWorkspace, saveWorkspace, type WorkspaceState } from '@/data/workspace';
+import { loadWorkspaceFromCloud, syncToCloud, type SyncAction, type WorkspaceState } from '@/data/workspace';
 import { FloatingHeader, McIcon } from '@/components/Header';
 import { WorkspacePage } from '@/components/WorkspacePage';
 import { ProjectsPage } from '@/components/ProjectsPage';
@@ -322,14 +322,22 @@ function App() {
   const [showSplash, setShowSplash] = useState(true);
   const [leaving, setLeaving] = useState(false);
   const [route, setRoute] = useState<Route>(getRoute);
-  const [workspace, setWorkspace] = useState<WorkspaceState>(loadWorkspace);
+  const [workspace, setWorkspace] = useState<WorkspaceState>({ projects: [], blogPosts: [], activeProjectId: null, activePageId: null, activePostId: null });
   const [storageError, setStorageError] = useState('');
 
   useEffect(() => {
-    if (!saveWorkspace(workspace)) {
-      setStorageError('Browser storage is full — the latest change was not saved. Remove a few photos and try again.');
+    loadWorkspaceFromCloud().then(setWorkspace).catch((e: Error) => setStorageError(`Could not reach the cloud database: ${e.message}`));
+  }, []);
+
+  async function sync(action: SyncAction): Promise<boolean> {
+    try {
+      await syncToCloud(action);
+      return true;
+    } catch {
+      setStorageError('Cloud sync failed — your change is only on this screen. Hit Save & Sync again.');
+      return false;
     }
-  }, [workspace]);
+  }
 
   useEffect(() => {
     const lenis = new Lenis({ duration: 1.15, smoothWheel: true });
@@ -366,7 +374,7 @@ function App() {
   if (showSplash) return <SplashScreen leaving={leaving} />;
   if (route === '/projects') return <ProjectsPage projects={workspace.projects} onNavigate={navigate} />;
   if (route === '/blog') return <BlogPage posts={workspace.blogPosts} onNavigate={navigate} />;
-  if (route === '/workspace') return <WorkspacePage state={workspace} setState={setWorkspace} storageError={storageError} clearStorageError={() => setStorageError('')} onNavigate={navigate} />;
+  if (route === '/workspace') return <WorkspacePage state={workspace} setState={setWorkspace} sync={sync} storageError={storageError} clearStorageError={() => setStorageError('')} onNavigate={navigate} />;
   return <HomePage onNavigate={navigate} />;
 }
 

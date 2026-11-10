@@ -1,3 +1,5 @@
+import { getSupabase } from '@/data/supabase';
+
 export type InlineImage = {
   id: string;
   src: string;
@@ -41,10 +43,7 @@ export type WorkspaceState = {
   activePostId: string | null;
 };
 
-const STORAGE_KEY = 'gemer.workspace.v2';
-const OLD_STORAGE_KEYS = ['gemer.workspace.v1'];
-
-export const uid = () => `id-${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 8)}`;
+export const uid = () => crypto.randomUUID();
 
 export function createLogBlock(text = ''): LogBlock {
   return { id: uid(), text, images: [] };
@@ -60,30 +59,6 @@ export function createProject(name: string): Project {
 
 export function createBlogPost(): BlogPost {
   return { id: uid(), title: '', datePublished: new Date().toISOString(), blocks: [createLogBlock()] };
-}
-
-export function loadWorkspace(): WorkspaceState {
-  try {
-    const raw = window.localStorage.getItem(STORAGE_KEY);
-    if (raw) {
-      const parsed = JSON.parse(raw) as WorkspaceState;
-      if (Array.isArray(parsed.projects)) return { ...parsed, blogPosts: parsed.blogPosts ?? [], activePostId: parsed.activePostId ?? null };
-    }
-  } catch {
-    // corrupted storage falls through to a fresh state
-  }
-  return { projects: [], blogPosts: [], activeProjectId: null, activePageId: null, activePostId: null };
-}
-
-export function saveWorkspace(state: WorkspaceState): boolean {
-  try {
-    window.localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
-    for (const key of OLD_STORAGE_KEYS) window.localStorage.removeItem(key);
-    return true;
-  } catch {
-    // quota exceeded — caller surfaces a warning to the user
-    return false;
-  }
 }
 
 export function findPage(state: WorkspaceState): Page | undefined {
@@ -114,4 +89,93 @@ export function compressImage(file: File, maxSize = 1100, quality = 0.72): Promi
     };
     img.src = url;
   });
+}
+
+type ProjectRow = { id: string; name: string; category: string | null; summary: string | null; accent: string | null; created_at: string };
+type PageRow = { id: string; project_id: string; title: string; updated_at: string };
+type BlockRow = { id: string; page_id: string; type: string; value: { text?: string; images?: InlineImage[] }; position_order: number };
+type PostRow = { id: string; title: string; date_published: string; content_blocks: LogBlock[] | null };
+
+export async function loadWorkspaceFromCloud(): Promise<WorkspaceState> {
+  const sb = getSupabase();
+  const [projectsRes, pagesRes, blocksRes, postsRes] = await Promise.all([
+    sb.from('projects').select('*').order('created_at', { ascending: true }),
+    sb.from('pages').select('*').order('updated_at', { ascending: false }),
+    sb.from('log_blocks').select('*').order('position_order', { ascending: true }),
+    sb.from('blog_posts').select('*').order('date_published', { ascending: false }),
+  ]);
+  const err = projectsRes.error ?? pagesRes.error ?? blocksRes.error ?? postsRes.error;
+  if (err) throw new Error(err.message);
+
+  const blocks = (blocksRes.data ?? []) as BlockRow[];
+  const pages = (pagesRes.data ?? []) as PageRow[];
+  const projects = ((projectsRes.data ?? []) as ProjectRow[]).map((p) => ({
+    id: p.id,
+    name: p.name,
+    category: p.category ?? 'Project',
+    summary: p.summary ?? '',
+    accent: p.accent ?? 'cyan',
+    created_at: p.created_at,
+    pages: pages
+      .filter((pg) => pg.project_id === p.id)
+      .map((pg) => ({
+        id: pg.id,
+        title: pg.title,
+        updated_at: pg.updated_at,
+        blocks: blocks
+          .filter((b) => b.page_id === pg.id)
+          .map((b) => ({ id: b.id, text: b.value?.text ?? '', images: Array.isArray(b.value?.images) ? b.value.images : [] })),
+      })),
+  }));
+  const blogPosts = ((postsRes.data ?? []) as PostRow[]).map((p) => ({
+    id: p.id,
+    title: p.title,
+    datePublished: p.date_published,
+    blocks: Array.isArray(p.content_blocks) ? p.content_blocks : [],
+  }));
+  return { projects, blogPosts, activeProjectId: null, activePageId: null, activePostId: null };
+}
+
+function throwIf<T extends { error: { message: string } | null }>(res: T): T {
+  if (res.error) throw new Error(res.error.message);
+  return res;
+}
+
+async function cloudSavePage(project: Project, page: Page) {
+  const sb = getSupabase();
+  throwIf(await sb.from('projects').upsert({ id: project.id, name: project.name, category: project.category, summary: project.summary, accent: project.accent, created_at: project.created_at }));
+  throwIf(await sb.from('pages').upsert({ id: page.id, project_id: project.id, title: page.title, updated_at: page.updated_at }));
+  throwIf(await sb.from('log_blocks').delete().eq('page_id', page.id));
+  if (page.blocks.length > 0) {
+    throwIf(await sb.from('log_blocks').insert(page.blocks.map((b, i) => ({ id: b.id, page_id: page.id, type: 'text', value: { text: b.text, images: b.images }, position_order: i }))));
+  }
+}
+
+async function cloudSavePost(post: BlogPost) {
+  throwIf(await getSupabase().from('blog_posts').upsert({ id: post.id, title: post.title, date_published: post.datePublished, content_blocks: post.blocks }));
+}
+
+async function cloudDeletePage(id: string) {
+  throwIf(await getSupabase().from('pages').delete().eq('id', id));
+}
+async function cloudDeleteProject(id: string) {
+  throwIf(await getSupabase().from('projects').delete().eq('id', id));
+}
+async function cloudDeletePost(id: string) {
+  throwIf(await getSupabase().from('blog_posts').delete().eq('id', id));
+}
+
+export type SyncAction =
+  | { kind: 'save-page'; project: Project; page: Page }
+  | { kind: 'save-post'; post: BlogPost }
+  | { kind: 'delete-page'; id: string }
+  | { kind: 'delete-project'; id: string }
+  | { kind: 'delete-post'; id: string };
+
+export async function syncToCloud(action: SyncAction): Promise<void> {
+  if (action.kind === 'save-page') return cloudSavePage(action.project, action.page);
+  if (action.kind === 'save-post') return cloudSavePost(action.post);
+  if (action.kind === 'delete-page') return cloudDeletePage(action.id);
+  if (action.kind === 'delete-project') return cloudDeleteProject(action.id);
+  return cloudDeletePost(action.id);
 }

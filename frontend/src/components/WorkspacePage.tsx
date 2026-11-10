@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { ArrowLeft, FolderKanban, FileText, Newspaper, Plus, Save, Trash2, X } from 'lucide-react';
 import { LogBlockEditor } from '@/components/blocks';
 import { FloatingHeader, McIcon } from '@/components/Header';
-import { createBlogPost, createLogBlock, createPage, createProject, findPage, type BlogPost, type Page, type Project, type WorkspaceState } from '@/data/workspace';
+import { createBlogPost, createLogBlock, createPage, createProject, findPage, type BlogPost, type Page, type Project, type SyncAction, type WorkspaceState } from '@/data/workspace';
 
 const accentKeys = ['cyan', 'lime', 'amber', 'blue'];
 type Space = 'projects' | 'blog';
@@ -10,12 +10,13 @@ type Space = 'projects' | 'blog';
 type Props = {
   state: WorkspaceState;
   setState: (next: WorkspaceState) => void;
+  sync: (action: SyncAction) => Promise<boolean>;
   storageError: string;
   clearStorageError: () => void;
   onNavigate: (route: '/' | '/projects' | '/workspace' | '/blog') => void;
 };
 
-export function WorkspacePage({ state, setState, storageError, clearStorageError, onNavigate }: Props) {
+export function WorkspacePage({ state, setState, sync, storageError, clearStorageError, onNavigate }: Props) {
   const [space, setSpace] = useState<Space>('projects');
   const [message, setMessage] = useState('');
   const project = state.projects.find((p) => p.id === state.activeProjectId);
@@ -50,6 +51,7 @@ export function WorkspacePage({ state, setState, storageError, clearStorageError
       activeProjectId: state.activeProjectId === id ? null : state.activeProjectId,
       activePageId: state.activeProjectId === id ? null : state.activePageId,
     });
+    void sync({ kind: 'delete-project', id });
     flash('Project removed.');
   }
   function addPage() {
@@ -68,6 +70,7 @@ export function WorkspacePage({ state, setState, storageError, clearStorageError
       projects: state.projects.map((p) => (p.id === project.id ? { ...p, pages: p.pages.filter((pg) => pg.id !== id) } : p)),
       activePageId: state.activePageId === id ? null : state.activePageId,
     });
+    void sync({ kind: 'delete-page', id });
     flash('Page removed.');
   }
   function addLogBlock() {
@@ -85,6 +88,7 @@ export function WorkspacePage({ state, setState, storageError, clearStorageError
       blogPosts: state.blogPosts.filter((p) => p.id !== id),
       activePostId: state.activePostId === id ? null : state.activePostId,
     });
+    void sync({ kind: 'delete-post', id });
     flash('Post removed.');
   }
   function addPostBlock() {
@@ -237,8 +241,17 @@ export function WorkspacePage({ state, setState, storageError, clearStorageError
                   ))}
                 </div>
                 <div className="flex flex-wrap items-center gap-3 pt-2">
-                  <button data-testid="post-save-button" type="button" onClick={() => flash('Post published locally.')} className="flex items-center gap-2 rounded-full bg-[#c7f36b] px-5 py-3 text-xs font-bold uppercase tracking-wider text-[#162016] transition hover:bg-white">
-                    Publish post <Save size={14} />
+                  <button
+                    data-testid="post-save-button"
+                    type="button"
+                    onClick={() =>
+                      sync({ kind: 'save-post', post }).then((ok) => {
+                        if (ok) flash('Post published & synced to cloud.');
+                      })
+                    }
+                    className="flex items-center gap-2 rounded-full bg-[#c7f36b] px-5 py-3 text-xs font-bold uppercase tracking-wider text-[#162016] transition hover:bg-white"
+                  >
+                    Save &amp; Sync <Save size={14} />
                   </button>
                   <button data-testid="post-close-button" type="button" onClick={() => setState({ ...state, activePostId: null })} className="rounded-full border border-white/10 px-5 py-3 text-xs font-bold uppercase tracking-wider text-[#a8b7b7] transition hover:border-white/30 hover:text-white">
                     <span className="flex items-center gap-2">
@@ -313,8 +326,17 @@ export function WorkspacePage({ state, setState, storageError, clearStorageError
               </div>
 
               <div className="flex flex-wrap items-center gap-3 pt-2">
-                <button data-testid="editor-save-button" type="button" onClick={() => flash('Page saved locally.')} className="flex items-center gap-2 rounded-full bg-[#c7f36b] px-5 py-3 text-xs font-bold uppercase tracking-wider text-[#162016] transition hover:bg-white">
-                  Save page <Save size={14} />
+                <button
+                  data-testid="editor-save-button"
+                  type="button"
+                  onClick={() =>
+                    sync({ kind: 'save-page', project, page }).then((ok) => {
+                      if (ok) flash('Page saved & synced to cloud.');
+                    })
+                  }
+                  className="flex items-center gap-2 rounded-full bg-[#c7f36b] px-5 py-3 text-xs font-bold uppercase tracking-wider text-[#162016] transition hover:bg-white"
+                >
+                  Save &amp; Sync <Save size={14} />
                 </button>
                 <button data-testid="editor-close-button" type="button" onClick={() => setState({ ...state, activePageId: null })} className="rounded-full border border-white/10 px-5 py-3 text-xs font-bold uppercase tracking-wider text-[#a8b7b7] transition hover:border-white/30 hover:text-white">
                   <span className="flex items-center gap-2">
