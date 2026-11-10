@@ -54,6 +54,13 @@ html.minecraft .footer-canvas { cursor: default; }
 .action-caption { margin-top: 22px; color: rgba(255,255,255,.68); }
 
 .project-card { min-width: 0; }
+.project-cover { position: absolute; inset: 0; z-index: 0; height: 100%; width: 100%; object-fit: cover; }
+.cover-edit { margin-top: 14px; border-top: 1px solid rgba(255,255,255,.08); padding: 12px 4px 4px; display: flex; flex-direction: column; gap: 10px; }
+.cover-edit-preview { width: 100%; height: 84px; object-fit: cover; border-radius: 10px; border: 1px solid rgba(255,255,255,.12); }
+.cover-edit-btn { justify-content: center; width: 100%; }
+html.light .cover-edit { border-top-color: rgba(22,33,26,.12); }
+html.light .cover-edit-preview { border-color: rgba(22,33,26,.14); }
+html.minecraft .cover-edit-preview { border-radius: 0; border: 2px solid; border-color: #212121 #8b8b8b #8b8b8b #212121; image-rendering: pixelated; }
 .project-art { position: relative; min-height: 330px; overflow: hidden; border-radius: 20px; transition: transform 400ms cubic-bezier(.2,.8,.2,1), box-shadow 400ms ease; }
 .project-card:hover .project-art { transform: translateY(-6px); box-shadow: 0 22px 45px rgba(0,0,0,.22); }
 .project-noise { position: absolute; inset: 0; opacity: .2; background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 180 180' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.8' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='.6'/%3E%3C/svg%3E"); mix-blend-mode: soft-light; }

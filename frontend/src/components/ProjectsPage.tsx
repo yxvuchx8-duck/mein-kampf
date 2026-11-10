@@ -25,10 +25,15 @@ function ProjectSquare({ project, index, onOpen }: { project: Project; index: nu
       transition={{ delay: 0.08 + index * 0.08, duration: 0.7, ease: [0.16, 1, 0.3, 1] }}
     >
       <div className={`project-art bg-gradient-to-br ${accentClasses[project.accent] ?? accentClasses.cyan}`}>
+        {project.coverPhoto && <img src={project.coverPhoto} alt={`${project.name} cover`} className="project-cover" data-testid={`project-cover-${project.id}`} loading="lazy" />}
         <div className="project-noise" />
         <span className="absolute left-5 top-5 rounded-full border border-white/20 bg-black/10 px-3 py-1 text-[10px] font-bold uppercase tracking-wider text-white/80">{project.category || 'Project'}</span>
-        <span className="project-mark">G</span>
-        <div className="project-ring" />
+        {!project.coverPhoto && (
+          <>
+            <span className="project-mark">G</span>
+            <div className="project-ring" />
+          </>
+        )}
         <div className="absolute bottom-5 right-5 flex h-11 w-11 items-center justify-center rounded-full bg-[#111818] text-[#c7f36b] transition group-hover:rotate-45">
           <ArrowUpRight size={18} />
         </div>

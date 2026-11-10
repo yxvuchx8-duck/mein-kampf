@@ -24,6 +24,7 @@ export type Project = {
   category: string;
   summary: string;
   accent: string;
+  coverPhoto: string;
   created_at: string;
   pages: Page[];
 };
@@ -54,7 +55,7 @@ export function createPage(title = 'Untitled page'): Page {
 }
 
 export function createProject(name: string): Project {
-  return { id: uid(), name, category: 'Project', summary: '', accent: 'cyan', created_at: new Date().toISOString(), pages: [] };
+  return { id: uid(), name, category: 'Project', summary: '', accent: 'cyan', coverPhoto: '', created_at: new Date().toISOString(), pages: [] };
 }
 
 export function createBlogPost(): BlogPost {
@@ -91,7 +92,7 @@ export function compressImage(file: File, maxSize = 1100, quality = 0.72): Promi
   });
 }
 
-type ProjectRow = { id: string; name: string; category: string | null; summary: string | null; accent: string | null; created_at: string };
+type ProjectRow = { id: string; name: string; category: string | null; summary: string | null; accent: string | null; cover_photo: string | null; created_at: string };
 type PageRow = { id: string; project_id: string; title: string; updated_at: string };
 type BlockRow = { id: string; page_id: string; type: string; value: { text?: string; images?: InlineImage[] }; position_order: number };
 type PostRow = { id: string; title: string; date_published: string; content_blocks: LogBlock[] | null };
@@ -115,6 +116,7 @@ export async function loadWorkspaceFromCloud(): Promise<WorkspaceState> {
     category: p.category ?? 'Project',
     summary: p.summary ?? '',
     accent: p.accent ?? 'cyan',
+    coverPhoto: p.cover_photo ?? '',
     created_at: p.created_at,
     pages: pages
       .filter((pg) => pg.project_id === p.id)
@@ -143,7 +145,7 @@ function throwIf<T extends { error: { message: string } | null }>(res: T): T {
 
 async function cloudSavePage(project: Project, page: Page) {
   const sb = getSupabase();
-  throwIf(await sb.from('projects').upsert({ id: project.id, name: project.name, category: project.category, summary: project.summary, accent: project.accent, created_at: project.created_at }));
+  throwIf(await sb.from('projects').upsert({ id: project.id, name: project.name, category: project.category, summary: project.summary, accent: project.accent, cover_photo: project.coverPhoto, created_at: project.created_at }));
   throwIf(await sb.from('pages').upsert({ id: page.id, project_id: project.id, title: page.title, updated_at: page.updated_at }));
   throwIf(await sb.from('log_blocks').delete().eq('page_id', page.id));
   if (page.blocks.length > 0) {
@@ -165,9 +167,14 @@ async function cloudDeletePost(id: string) {
   throwIf(await getSupabase().from('blog_posts').delete().eq('id', id));
 }
 
+async function cloudSaveProject(project: Project) {
+  throwIf(await getSupabase().from('projects').upsert({ id: project.id, name: project.name, category: project.category, summary: project.summary, accent: project.accent, cover_photo: project.coverPhoto, created_at: project.created_at }));
+}
+
 export type SyncAction =
   | { kind: 'save-page'; project: Project; page: Page }
   | { kind: 'save-post'; post: BlogPost }
+  | { kind: 'save-project'; project: Project }
   | { kind: 'delete-page'; id: string }
   | { kind: 'delete-project'; id: string }
   | { kind: 'delete-post'; id: string };
@@ -175,6 +182,7 @@ export type SyncAction =
 export async function syncToCloud(action: SyncAction): Promise<void> {
   if (action.kind === 'save-page') return cloudSavePage(action.project, action.page);
   if (action.kind === 'save-post') return cloudSavePost(action.post);
+  if (action.kind === 'save-project') return cloudSaveProject(action.project);
   if (action.kind === 'delete-page') return cloudDeletePage(action.id);
   if (action.kind === 'delete-project') return cloudDeleteProject(action.id);
   return cloudDeletePost(action.id);

@@ -1,8 +1,8 @@
-import { useState } from 'react';
-import { ArrowLeft, FolderKanban, FileText, Newspaper, Plus, Save, Trash2, X } from 'lucide-react';
+import { useRef, useState } from 'react';
+import { ArrowLeft, FolderKanban, FileText, ImagePlus, Newspaper, Plus, Save, Trash2, X } from 'lucide-react';
 import { LogBlockEditor } from '@/components/blocks';
 import { FloatingHeader, McIcon } from '@/components/Header';
-import { createBlogPost, createLogBlock, createPage, createProject, findPage, type BlogPost, type Page, type Project, type SyncAction, type WorkspaceState } from '@/data/workspace';
+import { compressImage, createBlogPost, createLogBlock, createPage, createProject, findPage, type BlogPost, type Page, type Project, type SyncAction, type WorkspaceState } from '@/data/workspace';
 
 const accentKeys = ['cyan', 'lime', 'amber', 'blue'];
 type Space = 'projects' | 'blog';
@@ -19,6 +19,8 @@ type Props = {
 export function WorkspacePage({ state, setState, sync, storageError, clearStorageError, onNavigate }: Props) {
   const [space, setSpace] = useState<Space>('projects');
   const [message, setMessage] = useState('');
+  const [coverBusy, setCoverBusy] = useState(false);
+  const coverInput = useRef<HTMLInputElement>(null);
   const project = state.projects.find((p) => p.id === state.activeProjectId);
   const page = findPage(state);
   const post = state.blogPosts.find((p) => p.id === state.activePostId);
@@ -37,6 +39,24 @@ export function WorkspacePage({ state, setState, sync, storageError, clearStorag
   }
   function updatePost(id: string, fn: (post: BlogPost) => BlogPost) {
     setState({ ...state, blogPosts: state.blogPosts.map((p) => (p.id === id ? fn(p) : p)) });
+  }
+
+  async function handleCoverFile(event: React.ChangeEvent<HTMLInputElement>) {
+    const file = event.target.files?.[0];
+    event.target.value = '';
+    if (!file || !project) return;
+    setCoverBusy(true);
+    try {
+      const coverPhoto = await compressImage(file);
+      const next = { ...project, coverPhoto };
+      updateProject(project.id, () => next);
+      const ok = await sync({ kind: 'save-project', project: next });
+      flash(ok ? 'Cover image saved & synced.' : 'Cover set — sync failed, hit it again.');
+    } catch {
+      flash('Could not read that image file.');
+    } finally {
+      setCoverBusy(false);
+    }
   }
 
   function addProject() {
@@ -140,6 +160,15 @@ export function WorkspacePage({ state, setState, sync, storageError, clearStorag
                   </button>
                 </div>
               ))}
+              {project && (
+                <div className="cover-edit" data-testid="cover-edit-panel">
+                  {project.coverPhoto && <img src={project.coverPhoto} alt="Current cover" className="cover-edit-preview" data-testid="cover-preview" />}
+                  <button type="button" data-testid="cover-edit-button" onClick={() => coverInput.current?.click()} className="editor-block-add-btn cover-edit-btn" disabled={coverBusy}>
+                    <ImagePlus size={13} /> {coverBusy ? 'Compressing…' : project.coverPhoto ? 'Replace cover image' : 'Edit cover image'}
+                  </button>
+                  <input ref={coverInput} type="file" accept="image/*" className="hidden" data-testid="cover-file-input" onChange={handleCoverFile} />
+                </div>
+              )}
             </>
           )}
         </aside>
@@ -274,7 +303,7 @@ export function WorkspacePage({ state, setState, sync, storageError, clearStorag
               <h1 className="text-4xl tracking-[-0.05em] sm:text-5xl">
                 Pick a page<span className="text-[#c7f36b]">.</span>
               </h1>
-              <p className="mt-4 max-w-sm text-sm leading-6 text-[#879797]">Choose a project on the left, then open or add a page to start writing. Everything saves locally in your browser.</p>
+              <p className="mt-4 max-w-sm text-sm leading-6 text-[#879797]">Choose a project on the left, then open or add a page to start writing. Everything saves to your cloud database.</p>
             </div>
           ) : (
             <div className="editor-form" data-testid="page-editor-form">

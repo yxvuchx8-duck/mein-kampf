@@ -67,6 +67,12 @@ User imported an existing React/Tailwind project from Bolt (ZIP). Reconstruct th
 ## Implemented (2026-11-10, phase 9 — Minecraft card color mapping)
 - Each home action card now keeps a themed dark color in Minecraft mode: About=#1a4d4a, Workspace=#2e4d1a, Projects=#4d2a1a, Blog=#1a2d4d, with pixel bevel borders and hover (white border + gold title) intact. Rules must stay `.action-card.action-*` with :hover variants to outrank the generic MC button hover. Verified by testing agent (all 5 checks PASS).
 
+## Implemented (2026-11-10, phase 10 — project cover photos)
+- `cover_photo text` column added to Supabase projects table; `coverPhoto` on Project type, mapped in cloud load/save.
+- Workspace: selecting a project shows a cover panel in the left rail (thumbnail preview + "Edit/Replace cover image" file trigger); uploads go through the canvas compressor to Base64 JPEG and sync to Supabase immediately. New 'save-project' sync action.
+- Public grid: cards with a cover render it full-bleed (object-fit: cover) replacing the G placeholder; PROJECT badge + arrow stay overlaid. Projects without a cover keep the original gradient art.
+- Verified: user's own cover (uploaded mid-session) syncs to cloud, persists across reload, renders in grid with object-fit cover + badge/arrow intact, workspace shows preview + replace button. Also fixed stale "saves locally" placeholder copy.
+
 ## Backlog / next
 - P0: Homepage layout + project grid details — user will provide in next prompt.
 - P1: Block reordering (drag or up/down) in the workspace editor.
