@@ -145,24 +145,32 @@ function AccessModal({ onClose, onGranted }: { onClose: () => void; onGranted: (
   );
 }
 
-const marqueeItems = ['Enough Talent Can Beat Hardwork', 'Gemer', 'Projects & Random Things', 'Documented With Curiosity'];
+const PARTICLE_COUNT = 14;
 
-function EditorialMarquee() {
-  const row = [...marqueeItems, ...marqueeItems];
+function seeded(index: number, salt: number) {
+  const x = Math.sin(index * 127.1 + salt * 311.7) * 43758.5453;
+  return x - Math.floor(x);
+}
+
+function ParticleStream() {
+  const particles = Array.from({ length: PARTICLE_COUNT }, (_, i) => ({
+    left: seeded(i, 1) * 100,
+    top: 18 + seeded(i, 2) * 64,
+    size: 3 + Math.round(seeded(i, 3) * 5),
+    duration: 9 + seeded(i, 4) * 14,
+    delay: -seeded(i, 5) * 20,
+    bright: seeded(i, 6) > 0.55,
+  }));
   return (
-    <div className="marquee" data-testid="editorial-marquee" aria-hidden="true">
-      <div className="marquee-track">
-        {[0, 1].map((half) => (
-          <div key={half} className="marquee-half">
-            {row.map((item, index) => (
-              <span key={`${half}-${index}`} className="marquee-item">
-                {item}
-                <span className="marquee-dot" />
-              </span>
-            ))}
-          </div>
-        ))}
-      </div>
+    <div className="particle-stream" data-testid="editorial-marquee" aria-hidden="true">
+      <div className="particle-stream-line" />
+      {particles.map((p, i) => (
+        <span
+          key={i}
+          className={`particle ${p.bright ? 'particle-bright' : ''}`}
+          style={{ left: `${p.left}%`, top: `${p.top}%`, width: p.size, height: p.size, animationDuration: `${p.duration}s`, animationDelay: `${p.delay}s` }}
+        />
+      ))}
     </div>
   );
 }
@@ -212,7 +220,7 @@ function HomePage({ onNavigate }: { onNavigate: (route: Route) => void }) {
         </div>
       </section>
 
-      <EditorialMarquee />
+      <ParticleStream />
 
       <section className="action-section border-y border-white/10">
         <div className="mx-auto grid max-w-7xl gap-4 px-6 py-10 sm:px-10 sm:py-14 lg:grid-cols-4 lg:px-16">

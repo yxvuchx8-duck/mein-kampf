@@ -26,10 +26,10 @@ export function BlogPage({ posts, onNavigate }: { posts: BlogPost[]; onNavigate:
       <section className="mx-auto min-h-screen max-w-3xl px-6 pb-24 pt-36 sm:px-10">
         <div className="mb-14 border-b border-white/10 pb-6">
           <p className="mb-3 text-[10px] font-bold uppercase tracking-[0.25em] text-[#c7f36b]">Chronological feed</p>
-          <h1 className="text-5xl tracking-[-0.06em] sm:text-7xl">
-            Field notes<span className="text-[#c7f36b]">.</span>
+          <h1 className="text-5xl tracking-[-0.06em] sm:text-7xl" data-testid="blog-heading">
+            Things I Think
           </h1>
-          <p className="mt-5 max-w-md text-sm leading-6 text-[#879797]">Everything I publish, newest first — written in the same log stream as the project pages.</p>
+          <p className="mt-5 max-w-md text-sm leading-6 text-[#879797]">don't know why</p>
         </div>
         {sorted.length === 0 ? (
           <div className="gallery-empty" data-testid="blog-empty">

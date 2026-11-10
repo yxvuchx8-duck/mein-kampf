@@ -16,11 +16,21 @@ body { margin: 0; min-width: 320px; }
 .loading-line { animation: loading 2.2s cubic-bezier(.2,.8,.2,1) both; transform-origin: left; }
 .hero-glow { position: absolute; right: -20%; top: 18%; width: 50vw; height: 50vw; border-radius: 9999px; background: radial-gradient(circle, rgba(65,142,143,.18), transparent 67%); filter: blur(10px); }
 
-.marquee { overflow: hidden; border-top: 1px solid rgba(255,255,255,.08); padding: 18px 0; }
-.marquee-track { display: flex; width: max-content; animation: marquee-scroll 34s linear infinite; }
-.marquee-half { display: flex; flex-shrink: 0; align-items: center; }
-.marquee-item { display: flex; align-items: center; white-space: nowrap; font-size: clamp(1.5rem, 3vw, 2.6rem); letter-spacing: -.05em; color: rgba(238,242,235,.16); }
-.marquee-dot { margin: 0 28px; height: 8px; width: 8px; flex-shrink: 0; border-radius: 9999px; background: rgba(199,243,107,.4); }
+.particle-stream { position: relative; height: 110px; overflow: hidden; border-top: 1px solid rgba(255,255,255,.08); }
+.particle-stream-line { position: absolute; left: 0; right: 0; top: 50%; height: 1px; background: linear-gradient(90deg, transparent, rgba(199,243,107,.45) 35%, rgba(93,225,230,.35) 65%, transparent); animation: stream-line-glow 7s ease-in-out infinite; }
+.particle { position: absolute; display: block; background: rgba(199,243,107,.5); animation: particle-drift linear infinite; }
+.particle-bright { background: rgba(93,225,230,.55); box-shadow: 0 0 6px rgba(93,225,230,.35); }
+@keyframes particle-drift {
+  0% { transform: translate(0, 0); opacity: 0; }
+  12% { opacity: 1; }
+  50% { transform: translate(-3vw, -14px); }
+  88% { opacity: 1; }
+  100% { transform: translate(6vw, 10px); opacity: 0; }
+}
+@keyframes stream-line-glow {
+  0%, 100% { opacity: .45; }
+  50% { opacity: 1; }
+}
 
 .action-card { position: relative; display: flex; min-height: 230px; flex-direction: column; justify-content: flex-end; overflow: hidden; border-radius: 18px; padding: 24px; transition: transform 350ms cubic-bezier(.2,.8,.2,1), box-shadow 350ms ease; }
 .action-card::before { position: absolute; content: ''; inset: 0; opacity: .34; background: repeating-linear-gradient(135deg, transparent 0, transparent 18px, rgba(255,255,255,.06) 19px, transparent 20px); transition: transform 600ms ease; }
@@ -279,9 +289,9 @@ html.minecraft .blog-post .md-content { color: #1e1e1e; }
 html.minecraft .blog-post .md-content strong { color: #b38900; text-shadow: 1px 1px 0 rgba(0,0,0,.15); }
 html.minecraft .blog-post .md-content h1, html.minecraft .blog-post .md-content h2, html.minecraft .blog-post .md-content h3 { color: #b38900; text-shadow: 2px 2px 0 rgba(0,0,0,.2); }
 
-html.minecraft .action-card { border: 3px solid; border-color: #8b8b8b #212121 #212121 #8b8b8b; border-radius: 0; box-shadow: none; background: #4a4a4a; }
+html.minecraft .action-card { border: 3px solid; border-color: #8b8b8b #212121 #212121 #8b8b8b; border-radius: 0; box-shadow: inset 0 0 0 2px rgba(0,0,0,.55), 0 6px 0 rgba(0,0,0,.4); background: #313131; }
 html.minecraft .action-card::before { display: none; }
-html.minecraft .action-card:hover { transform: none; border-color: #ffffff; box-shadow: none; }
+html.minecraft .action-card:hover { transform: none; border-color: #ffffff; box-shadow: inset 0 0 0 2px rgba(0,0,0,.55), 0 6px 0 rgba(0,0,0,.4); }
 html.minecraft .action-title { color: #ffffff; text-shadow: 2px 2px 0 rgba(0,0,0,.6); }
 html.minecraft .action-card:hover .action-title { color: #ffff55; }
 html.minecraft .action-index, html.minecraft .action-caption { color: #c6c6c6; font-family: 'VT323', monospace; font-size: 16px; letter-spacing: .1em; }
@@ -292,8 +302,10 @@ html.minecraft .project-art { border: 3px solid #000; border-radius: 0; image-re
 html.minecraft .project-ring { border-radius: 0; }
 html.minecraft .project-mark { font-family: 'Press Start 2P', monospace; transform: translate(-50%, -50%) rotate(0); }
 html.minecraft .project-card:hover .project-mark { transform: translate(-50%, -50%) rotate(0) scale(1.06); }
-html.minecraft .marquee-item { color: rgba(255,255,85,.25); font-family: 'Press Start 2P', monospace; font-size: 1rem; }
-html.minecraft .marquee-dot { background: #55ff55; border-radius: 0; }
+html.minecraft .particle-stream { border-top-color: #000; }
+html.minecraft .particle-stream-line { background: linear-gradient(90deg, transparent, rgba(85,255,85,.6) 35%, rgba(255,255,85,.5) 65%, transparent); }
+html.minecraft .particle { background: rgba(85,255,85,.65); box-shadow: 0 0 6px rgba(85,255,85,.35); }
+html.minecraft .particle-bright { background: rgba(255,255,85,.7); box-shadow: 0 0 8px rgba(255,255,85,.4); }
 html.minecraft .hero-glow { background: radial-gradient(circle, rgba(85,255,85,.12), transparent 67%); filter: none; }
 html.minecraft .log-block-thumb, html.minecraft .log-view-figure { border: 2px solid #000; border-radius: 0; image-rendering: pixelated; }
 html.minecraft .log-block-thumb img, html.minecraft .log-view-figure img { image-rendering: pixelated; }
