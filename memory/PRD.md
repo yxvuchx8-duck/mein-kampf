@@ -47,6 +47,12 @@ User imported an existing React/Tailwind project from Bolt (ZIP). Reconstruct th
 - Minecraft theme tightened to the user's strict spec: buttons #4a4a4a with 2px borders (#8b8b8b top/left, #212121 bottom/right), hover → white border + #FFFF55 golden text with dark drop-shadow, border-radius 0 everywhere; panels = #c6c6c6 inventory frames with raised light/dark inset borders; blog feed becomes "server chat log" boards with golden #b38900 titles on gray panels; pixel fonts Press Start 2P (headers) + VT323 (body) via Google Fonts; pixel assets generated with gpt-image-1.5 (deepslate tile, creeper, sword, pickaxe) in /public/assets/mc; creeper guards the password lock, pickaxes mark projects, swords mark pages; success messages = achievement toast. Third toggle state cycles dark → light → minecraft.
 - Verified: post create/publish/persist across reload, public feed renders text+photo, empty states, MC theme on blog + lock screen + toggle revert to dark, projects route unaffected.
 
+## Implemented (2026-11-10, phase 6 — visual polish)
+- Home ticker words removed: replaced with ParticleStream (14 seeded drifting square particles + ambient glowing line, `.particle-stream` CSS; Minecraft-mode variant tints particles green/gold).
+- Minecraft action cards: solid #313131 fill restored under the pixel bevel borders (rule must stay more specific than the general `html.minecraft button` rule); card titles sized down in MC mode (clamp 1rem–1.45rem + word-break) to stop right-edge clipping.
+- Blog copy: heading "Things I Think", subtitle "don't know why".
+- Verified by testing agent (2 passes): ticker wordless + animating, all 4 cards solid rgb(49,49,49) with full titles visible at 1920px and 1024px, blog copy exact in both themes. Live site not checked; mobile <1024px not checked.
+
 ## Backlog / next
 - P0: Homepage layout + project grid details — user will provide in next prompt.
 - P1: Block reordering (drag or up/down) in the workspace editor.
