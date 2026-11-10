@@ -73,6 +73,9 @@ User imported an existing React/Tailwind project from Bolt (ZIP). Reconstruct th
 - Public grid: cards with a cover render it full-bleed (object-fit: cover) replacing the G placeholder; PROJECT badge + arrow stay overlaid. Projects without a cover keep the original gradient art.
 - Verified: user's own cover (uploaded mid-session) syncs to cloud, persists across reload, renders in grid with object-fit cover + badge/arrow intact, workspace shows preview + replace button. Also fixed stale "saves locally" placeholder copy.
 
+## Implemented (2026-11-10, phase 11 — remove cover action)
+- Workspace cover panel: "Remove cover" button (red outline, trash icon) shown only when the active project has a cover; clears coverPhoto in state + Supabase via save-project sync. Public card reverts to default G banner automatically. Verified: button conditionality, cloud persistence after reload, grid reversion.
+
 ## Backlog / next
 - P0: Homepage layout + project grid details — user will provide in next prompt.
 - P1: Block reordering (drag or up/down) in the workspace editor.

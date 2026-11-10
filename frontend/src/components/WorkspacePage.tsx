@@ -59,6 +59,14 @@ export function WorkspacePage({ state, setState, sync, storageError, clearStorag
     }
   }
 
+  async function removeCover() {
+    if (!project) return;
+    const next = { ...project, coverPhoto: '' };
+    updateProject(project.id, () => next);
+    const ok = await sync({ kind: 'save-project', project: next });
+    flash(ok ? 'Cover removed & synced.' : 'Cover removed — sync failed, hit Save & Sync again.');
+  }
+
   function addProject() {
     const p = createProject(`Project ${state.projects.length + 1}`);
     setState({ ...state, projects: [...state.projects, p], activeProjectId: p.id, activePageId: null });
@@ -163,9 +171,16 @@ export function WorkspacePage({ state, setState, sync, storageError, clearStorag
               {project && (
                 <div className="cover-edit" data-testid="cover-edit-panel">
                   {project.coverPhoto && <img src={project.coverPhoto} alt="Current cover" className="cover-edit-preview" data-testid="cover-preview" />}
-                  <button type="button" data-testid="cover-edit-button" onClick={() => coverInput.current?.click()} className="editor-block-add-btn cover-edit-btn" disabled={coverBusy}>
-                    <ImagePlus size={13} /> {coverBusy ? 'Compressing…' : project.coverPhoto ? 'Replace cover image' : 'Edit cover image'}
-                  </button>
+                  <div className="cover-edit-actions">
+                    <button type="button" data-testid="cover-edit-button" onClick={() => coverInput.current?.click()} className="editor-block-add-btn cover-edit-btn" disabled={coverBusy}>
+                      <ImagePlus size={13} /> {coverBusy ? 'Compressing…' : project.coverPhoto ? 'Replace cover image' : 'Edit cover image'}
+                    </button>
+                    {project.coverPhoto && (
+                      <button type="button" data-testid="cover-remove-button" onClick={removeCover} className="cover-remove-btn">
+                        <Trash2 size={13} /> Remove cover
+                      </button>
+                    )}
+                  </div>
                   <input ref={coverInput} type="file" accept="image/*" className="hidden" data-testid="cover-file-input" onChange={handleCoverFile} />
                 </div>
               )}
