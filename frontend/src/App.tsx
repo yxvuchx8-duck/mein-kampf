@@ -296,9 +296,12 @@ function App() {
   const [leaving, setLeaving] = useState(false);
   const [route, setRoute] = useState<Route>(getRoute);
   const [workspace, setWorkspace] = useState<WorkspaceState>(loadWorkspace);
+  const [storageError, setStorageError] = useState('');
 
   useEffect(() => {
-    saveWorkspace(workspace);
+    if (!saveWorkspace(workspace)) {
+      setStorageError('Browser storage is full — the latest change was not saved. Remove a few photos and try again.');
+    }
   }, [workspace]);
 
   useEffect(() => {
@@ -334,8 +337,8 @@ function App() {
   }
 
   if (showSplash) return <SplashScreen leaving={leaving} />;
-  if (route === '/projects') return <ProjectsPage notebooks={workspace.notebooks} onNavigate={navigate} />;
-  if (route === '/workspace') return <WorkspacePage state={workspace} setState={setWorkspace} onNavigate={navigate} />;
+  if (route === '/projects') return <ProjectsPage projects={workspace.projects} onNavigate={navigate} />;
+  if (route === '/workspace') return <WorkspacePage state={workspace} setState={setWorkspace} storageError={storageError} clearStorageError={() => setStorageError('')} onNavigate={navigate} />;
   return <HomePage onNavigate={navigate} />;
 }
 

@@ -1,71 +1,64 @@
 import { useState } from 'react';
-import { ArrowLeft, Code2, FileText, Image, NotebookPen, Plus, Save, Trash2, Video, X } from 'lucide-react';
-import { BlockEditor } from '@/components/blocks';
+import { ArrowLeft, FolderKanban, FileText, Plus, Save, Trash2, X } from 'lucide-react';
+import { LogBlockEditor } from '@/components/blocks';
 import { FloatingHeader } from '@/components/Header';
-import { createBlock, createNotebook, createPage, findPage, uid, type Block, type SubPage, type WorkspaceState } from '@/data/workspace';
+import { createLogBlock, createPage, createProject, findPage, type Page, type Project, type WorkspaceState } from '@/data/workspace';
 
-const accentClasses: Record<string, string> = {
-  cyan: 'from-[#153b42] via-[#236d72] to-[#91e9d3]',
-  lime: 'from-[#35451f] via-[#718d36] to-[#d3f36d]',
-  amber: 'from-[#4b321d] via-[#a85e38] to-[#f3ba6b]',
-  blue: 'from-[#1e334b] via-[#386a9a] to-[#9bd8f0]',
-};
 const accentKeys = ['cyan', 'lime', 'amber', 'blue'];
 
-const blockButtons: { type: Block['type']; label: string; icon: typeof FileText }[] = [
-  { type: 'markdown', label: 'Text', icon: FileText },
-  { type: 'image', label: 'Image', icon: Image },
-  { type: 'video', label: 'Video', icon: Video },
-  { type: 'code', label: 'Code', icon: Code2 },
-];
-
-function metaText(text: string) {
-  return text.replace(/[#>*`_-]/g, ' ').replace(/\s+/g, ' ').trim();
-}
-
-export function WorkspacePage({ state, setState, onNavigate }: { state: WorkspaceState; setState: (next: WorkspaceState) => void; onNavigate: (route: '/' | '/projects' | '/workspace') => void }) {
+export function WorkspacePage({ state, setState, storageError, clearStorageError, onNavigate }: { state: WorkspaceState; setState: (next: WorkspaceState) => void; storageError: string; clearStorageError: () => void; onNavigate: (route: '/' | '/projects' | '/workspace') => void }) {
   const [message, setMessage] = useState('');
-  const notebook = state.notebooks.find((nb) => nb.id === state.activeNotebookId);
+  const project = state.projects.find((p) => p.id === state.activeProjectId);
   const page = findPage(state);
-  const activePageId = page?.id;
 
   function flash(text: string) {
     setMessage(text);
-    window.setTimeout(() => setMessage(''), 2200);
+    window.setTimeout(() => setMessage(''), 2400);
   }
 
-  function updateNotebook(id: string, fn: (nb: (typeof state.notebooks)[number]) => (typeof state.notebooks)[number]) {
-    setState({ ...state, notebooks: state.notebooks.map((nb) => (nb.id === id ? fn(nb) : nb)) });
+  function updateProject(id: string, fn: (p: Project) => Project) {
+    setState({ ...state, projects: state.projects.map((p) => (p.id === id ? fn(p) : p)) });
   }
-  function updatePage(id: string, fn: (p: SubPage) => SubPage) {
-    if (!notebook) return;
-    updateNotebook(notebook.id, (nb) => ({ ...nb, pages: nb.pages.map((p) => (p.id === id ? fn(p) : p)) }));
+  function updatePage(id: string, fn: (pg: Page) => Page) {
+    if (!project) return;
+    updateProject(project.id, (p) => ({ ...p, pages: p.pages.map((pg) => (pg.id === id ? fn(pg) : pg)) }));
   }
 
-  function addNotebook() {
-    const nb = createNotebook(`Notebook ${state.notebooks.length + 1}`);
-    setState({ ...state, notebooks: [...state.notebooks, nb], activeNotebookId: nb.id, activePageId: null });
+  function addProject() {
+    const p = createProject(`Project ${state.projects.length + 1}`);
+    setState({ ...state, projects: [...state.projects, p], activeProjectId: p.id, activePageId: null });
   }
-  function removeNotebook(id: string) {
-    const next = state.notebooks.filter((nb) => nb.id !== id);
-    setState({ ...state, notebooks: next, activeNotebookId: state.activeNotebookId === id ? null : state.activeNotebookId, activePageId: state.activeNotebookId === id ? null : state.activePageId });
-    flash('Notebook removed.');
+  function removeProject(id: string) {
+    const next = state.projects.filter((p) => p.id !== id);
+    setState({
+      ...state,
+      projects: next,
+      activeProjectId: state.activeProjectId === id ? null : state.activeProjectId,
+      activePageId: state.activeProjectId === id ? null : state.activePageId,
+    });
+    flash('Project removed.');
   }
   function addPage() {
-    if (!notebook) return;
-    const p = createPage();
-    updateNotebook(notebook.id, (nb) => ({ ...nb, pages: [p, ...nb.pages] }));
-    setState({ ...state, notebooks: state.notebooks.map((nb) => (nb.id === notebook.id ? { ...nb, pages: [p, ...nb.pages] } : nb)), activePageId: p.id });
+    if (!project) return;
+    const pg = createPage();
+    setState({
+      ...state,
+      projects: state.projects.map((p) => (p.id === project.id ? { ...p, pages: [pg, ...p.pages] } : p)),
+      activePageId: pg.id,
+    });
   }
   function removePage(id: string) {
-    if (!notebook) return;
-    updateNotebook(notebook.id, (nb) => ({ ...nb, pages: nb.pages.filter((p) => p.id !== id) }));
-    if (activePageId === id) setState({ ...state, notebooks: state.notebooks.map((nb) => (nb.id === notebook.id ? { ...nb, pages: nb.pages.filter((p) => p.id !== id) } : nb)), activePageId: null });
+    if (!project) return;
+    setState({
+      ...state,
+      projects: state.projects.map((p) => (p.id === project.id ? { ...p, pages: p.pages.filter((pg) => pg.id !== id) } : p)),
+      activePageId: state.activePageId === id ? null : state.activePageId,
+    });
     flash('Page removed.');
   }
-  function addBlock(type: Block['type']) {
-    if (!activePageId) return;
-    updatePage(activePageId, (p) => ({ ...p, updated_at: new Date().toISOString(), blocks: [...p.blocks, createBlock(type)] }));
+  function addLogBlock() {
+    if (!page) return;
+    updatePage(page.id, (pg) => ({ ...pg, updated_at: new Date().toISOString(), blocks: [...pg.blocks, createLogBlock()] }));
   }
 
   return (
@@ -82,21 +75,21 @@ export function WorkspacePage({ state, setState, onNavigate }: { state: Workspac
       />
 
       <div className="workspace-layout mx-auto max-w-[1400px] px-4 pb-16 pt-28 sm:px-8">
-        <aside className="workspace-col" data-testid="notebook-rail">
+        <aside className="workspace-col" data-testid="project-rail">
           <div className="workspace-col-head">
-            <span>Notebooks</span>
-            <button data-testid="add-notebook-button" onClick={addNotebook} aria-label="Add notebook">
+            <span>Projects</span>
+            <button data-testid="add-project-button" onClick={addProject} aria-label="Add project">
               <Plus size={14} />
             </button>
           </div>
-          {state.notebooks.length === 0 && <p className="workspace-empty-hint">No notebooks yet. Create one to start documenting.</p>}
-          {state.notebooks.map((nb) => (
-            <div key={nb.id} className={`notebook-item ${nb.id === state.activeNotebookId ? 'notebook-item-active' : ''}`} data-testid={`notebook-item-${nb.id}`}>
-              <button className="notebook-item-main" onClick={() => setState({ ...state, activeNotebookId: nb.id, activePageId: null })}>
-                <NotebookPen size={14} />
-                <span className="truncate">{nb.name}</span>
+          {state.projects.length === 0 && <p className="workspace-empty-hint">No projects yet. Create one to start documenting.</p>}
+          {state.projects.map((p) => (
+            <div key={p.id} className={`notebook-item ${p.id === state.activeProjectId ? 'notebook-item-active' : ''}`} data-testid={`project-item-${p.id}`}>
+              <button className="notebook-item-main" onClick={() => setState({ ...state, activeProjectId: p.id, activePageId: null })}>
+                <FolderKanban size={14} />
+                <span className="truncate">{p.name}</span>
               </button>
-              <button className="notebook-item-remove" onClick={() => removeNotebook(nb.id)} aria-label={`Remove ${nb.name}`} data-testid={`notebook-remove-${nb.id}`}>
+              <button className="notebook-item-remove" onClick={() => removeProject(p.id)} aria-label={`Remove ${p.name}`} data-testid={`project-remove-${p.id}`}>
                 <Trash2 size={13} />
               </button>
             </div>
@@ -106,21 +99,21 @@ export function WorkspacePage({ state, setState, onNavigate }: { state: Workspac
         <aside className="workspace-col" data-testid="page-list">
           <div className="workspace-col-head">
             <span>Pages</span>
-            {notebook && (
+            {project && (
               <button data-testid="add-page-button" onClick={addPage} aria-label="Add page">
                 <Plus size={14} />
               </button>
             )}
           </div>
-          {!notebook && <p className="workspace-empty-hint">Select a notebook to see its pages.</p>}
-          {notebook && notebook.pages.length === 0 && <p className="workspace-empty-hint">No pages yet. Add the first one.</p>}
-          {notebook?.pages.map((p) => (
-            <div key={p.id} className={`notebook-item ${p.id === activePageId ? 'notebook-item-active' : ''}`} data-testid={`page-item-${p.id}`}>
-              <button className="notebook-item-main" onClick={() => setState({ ...state, activePageId: p.id })}>
+          {!project && <p className="workspace-empty-hint">Select a project to see its pages.</p>}
+          {project && project.pages.length === 0 && <p className="workspace-empty-hint">No pages yet. Add the first one.</p>}
+          {project?.pages.map((pg) => (
+            <div key={pg.id} className={`notebook-item ${pg.id === page?.id ? 'notebook-item-active' : ''}`} data-testid={`page-item-${pg.id}`}>
+              <button className="notebook-item-main" onClick={() => setState({ ...state, activePageId: pg.id })}>
                 <FileText size={13} />
-                <span className="truncate">{p.title || 'Untitled page'}</span>
+                <span className="truncate">{pg.title || 'Untitled page'}</span>
               </button>
-              <button className="notebook-item-remove" onClick={() => removePage(p.id)} aria-label={`Remove ${p.title}`} data-testid={`page-remove-${p.id}`}>
+              <button className="notebook-item-remove" onClick={() => removePage(pg.id)} aria-label={`Remove ${pg.title}`} data-testid={`page-remove-${pg.id}`}>
                 <Trash2 size={13} />
               </button>
             </div>
@@ -128,25 +121,31 @@ export function WorkspacePage({ state, setState, onNavigate }: { state: Workspac
         </aside>
 
         <section className="workspace-editor" data-testid="workspace-editor">
-          {!page ? (
+          {!page || !project ? (
             <div className="workspace-placeholder" data-testid="editor-empty">
               <p className="mb-2 text-[10px] font-bold uppercase tracking-[0.25em] text-[#c7f36b]">Secure editing suite</p>
               <h1 className="text-4xl tracking-[-0.05em] sm:text-5xl">
                 Pick a page<span className="text-[#c7f36b]">.</span>
               </h1>
-              <p className="mt-4 max-w-sm text-sm leading-6 text-[#879797]">Choose a notebook on the left, then open or add a page to start writing. Everything saves locally in your browser.</p>
+              <p className="mt-4 max-w-sm text-sm leading-6 text-[#879797]">Choose a project on the left, then open or add a page to start writing. Everything saves locally in your browser.</p>
             </div>
           ) : (
             <div className="editor-form" data-testid="page-editor-form">
-              <input data-testid="page-title-input" className="editor-page-title" value={page.title} onChange={(e) => updatePage(page.id, (p) => ({ ...p, title: e.target.value }))} placeholder="Untitled page" />
+              <input data-testid="page-title-input" className="editor-page-title" value={page.title} onChange={(e) => updatePage(page.id, (pg) => ({ ...pg, title: e.target.value }))} placeholder="Untitled page" />
               <div className="grid gap-5 sm:grid-cols-2">
                 <label>
-                  Category
-                  <input data-testid="editor-category-input" value={page.category} onChange={(e) => updatePage(page.id, (p) => ({ ...p, category: e.target.value }))} placeholder="Design · 2026" />
+                  Project name
+                  <input data-testid="project-name-input" value={project.name} onChange={(e) => updateProject(project.id, (p) => ({ ...p, name: e.target.value }))} placeholder="Project name" />
                 </label>
                 <label>
+                  Category
+                  <input data-testid="editor-category-input" value={project.category} onChange={(e) => updateProject(project.id, (p) => ({ ...p, category: e.target.value }))} placeholder="Design · 2026" />
+                </label>
+              </div>
+              <div className="grid gap-5 sm:grid-cols-2">
+                <label>
                   Accent
-                  <select data-testid="editor-accent-select" value={page.accent} onChange={(e) => updatePage(page.id, (p) => ({ ...p, accent: e.target.value }))}>
+                  <select data-testid="editor-accent-select" value={project.accent} onChange={(e) => updateProject(project.id, (p) => ({ ...p, accent: e.target.value }))}>
                     {accentKeys.map((key) => (
                       <option key={key} value={key}>
                         {key}
@@ -154,40 +153,33 @@ export function WorkspacePage({ state, setState, onNavigate }: { state: Workspac
                     ))}
                   </select>
                 </label>
+                <label>
+                  Project summary
+                  <input data-testid="project-summary-input" value={project.summary} onChange={(e) => updateProject(project.id, (p) => ({ ...p, summary: e.target.value }))} placeholder="One line shown on the project square." />
+                </label>
               </div>
-              <label>
-                Summary
-                <textarea data-testid="editor-summary-input" rows={2} value={page.summary} onChange={(e) => updatePage(page.id, (p) => ({ ...p, summary: e.target.value }))} placeholder="One or two lines shown on the gallery card." />
-              </label>
-              <label>
-                External link <span className="font-normal text-[#718080]">(optional)</span>
-                <input data-testid="editor-url-input" value={page.project_url} onChange={(e) => updatePage(page.id, (p) => ({ ...p, project_url: e.target.value }))} placeholder="https://" />
-              </label>
 
               <div className="editor-blocks">
                 <div className="editor-blocks-head">
-                  <span className="text-[10px] font-bold uppercase tracking-[0.18em] text-[#718080]">Content blocks</span>
-                  <div className="editor-block-add">
-                    {blockButtons.map(({ type, label, icon: Icon }) => (
-                      <button key={type} type="button" data-testid={`add-block-${type}`} onClick={() => addBlock(type)} className="editor-block-add-btn">
-                        <Icon size={13} /> {label}
-                      </button>
-                    ))}
-                  </div>
+                  <span className="text-[10px] font-bold uppercase tracking-[0.18em] text-[#718080]">Log stream</span>
+                  <button type="button" data-testid="add-log-block" onClick={addLogBlock} className="editor-block-add-btn">
+                    <Plus size={13} /> Add log block
+                  </button>
                 </div>
-                {page.blocks.length === 0 && <p className="workspace-empty-hint">No blocks yet — add text, images, videos or code.</p>}
+                {page.blocks.length === 0 && <p className="workspace-empty-hint">No log blocks yet — add one and start writing. Photos drop straight into a block.</p>}
                 {page.blocks.map((block) => (
-                  <BlockEditor
+                  <LogBlockEditor
                     key={block.id}
                     block={block}
-                    onChange={(patch) => updatePage(page.id, (p) => ({ ...p, updated_at: new Date().toISOString(), blocks: p.blocks.map((b) => (b.id === block.id ? { ...b, ...patch } : b)) }))}
-                    onRemove={() => updatePage(page.id, (p) => ({ ...p, blocks: p.blocks.filter((b) => b.id !== block.id) }))}
+                    onChange={(patch) => updatePage(page.id, (pg) => ({ ...pg, updated_at: new Date().toISOString(), blocks: pg.blocks.map((b) => (b.id === block.id ? { ...b, ...patch } : b)) }))}
+                    onRemove={() => updatePage(page.id, (pg) => ({ ...pg, blocks: pg.blocks.filter((b) => b.id !== block.id) }))}
+                    onStorageError={flash}
                   />
                 ))}
               </div>
 
-              <div className="flex items-center gap-3 pt-2">
-                <button data-testid="editor-save-button" type="button" onClick={() => flash('Page saved.')} className="flex items-center gap-2 rounded-full bg-[#c7f36b] px-5 py-3 text-xs font-bold uppercase tracking-wider text-[#162016] transition hover:bg-white">
+              <div className="flex flex-wrap items-center gap-3 pt-2">
+                <button data-testid="editor-save-button" type="button" onClick={() => flash('Page saved locally.')} className="flex items-center gap-2 rounded-full bg-[#c7f36b] px-5 py-3 text-xs font-bold uppercase tracking-wider text-[#162016] transition hover:bg-white">
                   Save page <Save size={14} />
                 </button>
                 <button data-testid="editor-close-button" type="button" onClick={() => setState({ ...state, activePageId: null })} className="rounded-full border border-white/10 px-5 py-3 text-xs font-bold uppercase tracking-wider text-[#a8b7b7] transition hover:border-white/30 hover:text-white">
@@ -203,11 +195,16 @@ export function WorkspacePage({ state, setState, onNavigate }: { state: Workspac
               </div>
             </div>
           )}
+          {storageError && (
+            <div className="mt-4 flex items-center justify-between rounded-2xl border border-[#f28a6d]/30 bg-[#f28a6d]/10 px-4 py-3 text-xs text-[#f28a6d]" data-testid="storage-error">
+              {storageError}
+              <button onClick={clearStorageError} aria-label="Dismiss storage warning">
+                <X size={14} />
+              </button>
+            </div>
+          )}
         </section>
       </div>
-      <span className="hidden" data-testid="workspace-state-probe" data-page-id={activePageId ?? ''} data-meta={page ? metaText(page.blocks.find((b) => b.type === 'markdown')?.text ?? '') : ''} data-accent={page?.accent ?? ''} data-uid={uid()} />
     </main>
   );
 }
-
-export { accentClasses };

@@ -35,6 +35,13 @@ User imported an existing React/Tailwind project from Bolt (ZIP). Reconstruct th
 - Security: workspace access-code input is now `type="password"` (native masking dots).
 - Verified: no pill classes in header, toggle flips light/dark on all routes, theme survives reload, password input masked, 1769 still unlocks workspace.
 
+## Implemented (2026-11-10, phase 4 — Project → Pages → Log Blocks restructure)
+- "Notebooks" concept fully removed. New schema in `src/data/workspace.ts`: Project (name/category/summary/accent) → Page (title, log blocks) → LogBlock (rich text + inline images). New localStorage key `gemer.workspace.v2` (old v1 key auto-purged on save).
+- Unified log blocks: each block = markdown textarea + "Insert photo" file tool. `compressImage()` canvas utility downsizes to ≤1100px JPEG q0.72 Base64 data URLs so photos fit the 5MB localStorage quota; quota overflow shows an in-app warning banner instead of throwing.
+- Workspace (/workspace): left = Projects rail (+ Add Project), middle = Pages index (+ Add Page), canvas = page editor with project meta fields + "+ Add Log Block" log stream.
+- Public (/projects): 3-stage flow — project squares grid → per-project Table of Contents (page rows with block counts + dates) → reading view rendering markdown + inline photos.
+- Verified: clean slate after purge, photo upload compressed to ~66KB total storage and persisted across reload, all 3 stages + back navigation.
+
 ## Backlog / next
 - P0: Homepage layout + project grid details — user will provide in next prompt.
 - P1: Block reordering (drag or up/down) in the workspace editor.
