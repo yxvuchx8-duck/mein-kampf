@@ -76,6 +76,9 @@ User imported an existing React/Tailwind project from Bolt (ZIP). Reconstruct th
 ## Implemented (2026-11-10, phase 11 — remove cover action)
 - Workspace cover panel: "Remove cover" button (red outline, trash icon) shown only when the active project has a cover; clears coverPhoto in state + Supabase via save-project sync. Public card reverts to default G banner automatically. Verified: button conditionality, cloud persistence after reload, grid reversion.
 
+## Implemented (2026-11-10, phase 12 — GitHub push)
+- Repo created + pushed: github.com/yxvuchx8-duck/mein-kampf (public, main branch, 105 files). Secrets excluded via .gitignore (.env files not committed; only frontend/.env.example with placeholder). GITHUB_TOKEN stored in secrets store; git remote scrubbed of token.
+
 ## Backlog / next
 - P0: Homepage layout + project grid details — user will provide in next prompt.
 - P1: Block reordering (drag or up/down) in the workspace editor.
