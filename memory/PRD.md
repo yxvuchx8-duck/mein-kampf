@@ -64,6 +64,9 @@ User imported an existing React/Tailwind project from Bolt (ZIP). Reconstruct th
 - New `src/components/FooterCanvas.tsx`: theme-aware canvas animation in a 150px footer band (110px on mobile). Clean/light mode = floating square node matrix + dual horizontal wave lines that morph toward the cursor on hover. Minecraft mode = pixel particle spawner rising from the floor (green XP orbs with yellow cores + two-tone charcoal smoke squares, 2px pixel-snapped) over the deepslate backdrop.
 - Verified: old text gone, canvas paints (831 lit nodes), hover morph works, MC mode spawns particles (2275 green px), no mobile horizontal overflow at 375px, theme cycling unaffected.
 
+## Implemented (2026-11-10, phase 9 — Minecraft card color mapping)
+- Each home action card now keeps a themed dark color in Minecraft mode: About=#1a4d4a, Workspace=#2e4d1a, Projects=#4d2a1a, Blog=#1a2d4d, with pixel bevel borders and hover (white border + gold title) intact. Rules must stay `.action-card.action-*` with :hover variants to outrank the generic MC button hover. Verified by testing agent (all 5 checks PASS).
+
 ## Backlog / next
 - P0: Homepage layout + project grid details — user will provide in next prompt.
 - P1: Block reordering (drag or up/down) in the workspace editor.

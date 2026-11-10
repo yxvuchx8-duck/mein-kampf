@@ -297,10 +297,10 @@ html.minecraft .blog-post .md-content strong { color: #b38900; text-shadow: 1px 
 html.minecraft .blog-post .md-content h1, html.minecraft .blog-post .md-content h2, html.minecraft .blog-post .md-content h3 { color: #b38900; text-shadow: 2px 2px 0 rgba(0,0,0,.2); }
 
 html.minecraft .action-card { border: 3px solid; border-color: #8b8b8b #212121 #212121 #8b8b8b; border-radius: 0; box-shadow: inset 0 0 0 2px rgba(0,0,0,.55), 0 6px 0 rgba(0,0,0,.4); background: #313131; }
-html.minecraft .action-cyan { background: #1a4d4a; }
-html.minecraft .action-lime { background: #2e4d1a; }
-html.minecraft .action-amber { background: #4d2a1a; }
-html.minecraft .action-blue { background: #1a2d4d; }
+html.minecraft .action-card.action-cyan, html.minecraft .action-card.action-cyan:hover { background: #1a4d4a; }
+html.minecraft .action-card.action-lime, html.minecraft .action-card.action-lime:hover { background: #2e4d1a; }
+html.minecraft .action-card.action-amber, html.minecraft .action-card.action-amber:hover { background: #4d2a1a; }
+html.minecraft .action-card.action-blue, html.minecraft .action-card.action-blue:hover { background: #1a2d4d; }
 html.minecraft .action-card::before { display: none; }
 html.minecraft .action-card:hover { transform: none; border-color: #ffffff; box-shadow: inset 0 0 0 2px rgba(0,0,0,.55), 0 6px 0 rgba(0,0,0,.4); }
 html.minecraft .action-title { color: #ffffff; text-shadow: 2px 2px 0 rgba(0,0,0,.6); font-size: clamp(1rem, 1.6vw, 1.45rem); line-height: 1.5; word-break: break-word; }
