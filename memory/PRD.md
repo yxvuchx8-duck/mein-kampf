@@ -59,6 +59,11 @@ User imported an existing React/Tailwind project from Bolt (ZIP). Reconstruct th
 - Verified end-to-end in preview: page + compressed photo saved to cloud, localStorage wiped + reload → data restored from Supabase, public 3-stage reading view renders cloud content (text + base64 photo), blog post appears in /blog. Cloud sync errors surface as a banner instead of failing silently.
 - Test data in the cloud db: project "Nebula Atlas" (page "Cloud Sync Test") and blog post "Cloud post test" — user can delete from workspace.
 
+## Implemented (2026-11-10, phase 8 — ambient footer)
+- Static footer text purged (© 2026 Gemer + Built with curiosity removed).
+- New `src/components/FooterCanvas.tsx`: theme-aware canvas animation in a 150px footer band (110px on mobile). Clean/light mode = floating square node matrix + dual horizontal wave lines that morph toward the cursor on hover. Minecraft mode = pixel particle spawner rising from the floor (green XP orbs with yellow cores + two-tone charcoal smoke squares, 2px pixel-snapped) over the deepslate backdrop.
+- Verified: old text gone, canvas paints (831 lit nodes), hover morph works, MC mode spawns particles (2275 green px), no mobile horizontal overflow at 375px, theme cycling unaffected.
+
 ## Backlog / next
 - P0: Homepage layout + project grid details — user will provide in next prompt.
 - P1: Block reordering (drag or up/down) in the workspace editor.

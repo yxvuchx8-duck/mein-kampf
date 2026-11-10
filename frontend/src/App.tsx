@@ -4,6 +4,7 @@ import Lenis from 'lenis';
 import { AnimatePresence, motion, useScroll, useTransform } from 'framer-motion';
 import { loadWorkspaceFromCloud, syncToCloud, type SyncAction, type WorkspaceState } from '@/data/workspace';
 import { FloatingHeader, McIcon } from '@/components/Header';
+import { FooterCanvas } from '@/components/FooterCanvas';
 import { WorkspacePage } from '@/components/WorkspacePage';
 import { ProjectsPage } from '@/components/ProjectsPage';
 import { BlogPage } from '@/components/BlogPage';
@@ -293,14 +294,8 @@ function HomePage({ onNavigate }: { onNavigate: (route: Route) => void }) {
         </div>
       </section>
 
-      <footer className="mx-auto flex max-w-7xl items-center justify-between border-t border-white/10 px-6 py-8 text-xs text-[#718080] sm:px-10 lg:px-16">
-        <div className="flex items-center gap-3">
-          <LogoMark size="h-8 w-8" />
-          <span>© 2026 Gemer</span>
-        </div>
-        <span className="flex items-center gap-2">
-          Built with curiosity <ArrowUpRight size={14} />
-        </span>
+      <footer className="footer-ambient" data-testid="footer-ambient">
+        <FooterCanvas />
       </footer>
 
       <AnimatePresence>

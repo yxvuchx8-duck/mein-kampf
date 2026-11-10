@@ -16,6 +16,13 @@ body { margin: 0; min-width: 320px; }
 .loading-line { animation: loading 2.2s cubic-bezier(.2,.8,.2,1) both; transform-origin: left; }
 .hero-glow { position: absolute; right: -20%; top: 18%; width: 50vw; height: 50vw; border-radius: 9999px; background: radial-gradient(circle, rgba(65,142,143,.18), transparent 67%); filter: blur(10px); }
 
+.footer-ambient { border-top: 1px solid rgba(255,255,255,.08); }
+.footer-canvas { position: relative; height: 150px; width: 100%; overflow: hidden; cursor: crosshair; }
+.footer-canvas-el { position: absolute; inset: 0; height: 100%; width: 100%; display: block; }
+html.minecraft .footer-ambient { border-top-color: #000; }
+html.minecraft .footer-canvas { cursor: default; }
+@media (max-width: 640px) { .footer-canvas { height: 110px; } }
+
 .particle-stream { position: relative; height: 110px; overflow: hidden; border-top: 1px solid rgba(255,255,255,.08); }
 .particle-stream-line { position: absolute; left: 0; right: 0; top: 50%; height: 1px; background: linear-gradient(90deg, transparent, rgba(199,243,107,.45) 35%, rgba(93,225,230,.35) 65%, transparent); animation: stream-line-glow 7s ease-in-out infinite; }
 .particle { position: absolute; display: block; background: rgba(199,243,107,.5); animation: particle-drift linear infinite; }
